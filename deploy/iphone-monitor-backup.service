@@ -1,0 +1,9 @@
+[Unit]
+Description=Backup Telegram iPhone Monitor database
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/iphone-monitor
+ExecStart=/usr/bin/docker compose exec -T bot python -m iphone_monitor.backup
