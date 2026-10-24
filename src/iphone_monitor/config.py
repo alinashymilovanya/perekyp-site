@@ -1,0 +1,63 @@
+"""Environment-backed configuration."""
+
+from dataclasses import dataclass
+from pathlib import Path
+
+
+@dataclass(frozen=True)
+class Settings:
+    telegram_bot_token: str
+    telegram_chat_id: str | None
+    minimum_margin_rub: int = 500
+    delivery_rub: int = 400
+    commission_rub: int = 0
+    repair_reserve_used_rub: int = 1_500
+    repair_reserve_broken_rub: int = 10_000
+    browser_act_path: str = "browser-act"
+    avito_session_name: str = "avito-check"
+    avito_search_url: str = ""
+    database_path: str = "data/seen.sqlite3"
+    poll_interval_seconds: int = 60
+
+
+def load_settings(path: str | Path = ".env") -> Settings:
+    values: dict[str, str] = {}
+    for raw_line in Path(path).read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        values[key.strip()] = value.strip()
+
+    token = values.get("TELEGRAM_BOT_TOKEN", "")
+    if not token:
+        raise ValueError("TELEGRAM_BOT_TOKEN is required in .env")
+
+    return Settings(
+        telegram_bot_token=token,
+        telegram_chat_id=values.get("TELEGRAM_CHAT_ID") or None,
+        minimum_margin_rub=int(values.get("MINIMUM_MARGIN_RUB", "500")),
+        delivery_rub=int(values.get("DELIVERY_RUB", "400")),
+        commission_rub=int(values.get("COMMISSION_RUB", "0")),
+        repair_reserve_used_rub=int(values.get("REPAIR_RESERVE_USED_RUB", "1500")),
+        repair_reserve_broken_rub=int(values.get("REPAIR_RESERVE_BROKEN_RUB", "10000")),
+        browser_act_path=values.get("BROWSER_ACT_PATH", "browser-act"),
+        avito_session_name=values.get("AVITO_SESSION_NAME", "avito-check"),
+        avito_search_url=values.get("AVITO_SEARCH_URL", ""),
+        database_path=values.get("DATABASE_PATH", "data/seen.sqlite3"),
+        poll_interval_seconds=int(values.get("POLL_INTERVAL_SECONDS", "60")),
+    )
+
+
+def save_chat_id(path: str | Path, chat_id: str) -> None:
+    """Persist the non-secret Telegram chat ID while preserving the token."""
+    env_path = Path(path)
+    lines = env_path.read_text(encoding="utf-8").splitlines()
+    replacement = f"TELEGRAM_CHAT_ID={chat_id}"
+    for index, line in enumerate(lines):
+        if line.startswith("TELEGRAM_CHAT_ID="):
+            lines[index] = replacement
+            break
+    else:
+        lines.append(replacement)
+    env_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
