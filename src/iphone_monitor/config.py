@@ -18,6 +18,9 @@ class Settings:
     avito_search_url: str = ""
     database_path: str = "data/seen.sqlite3"
     poll_interval_seconds: int = 60
+    listings_source: str = "disabled"
+    listings_source_url: str = ""
+    listings_source_token: str = ""
 
 
 def load_settings(path: str | Path = ".env") -> Settings:
@@ -46,6 +49,9 @@ def load_settings(path: str | Path = ".env") -> Settings:
         avito_search_url=values.get("AVITO_SEARCH_URL", ""),
         database_path=values.get("DATABASE_PATH", "data/seen.sqlite3"),
         poll_interval_seconds=int(values.get("POLL_INTERVAL_SECONDS", "60")),
+        listings_source=values.get("LISTINGS_SOURCE", "disabled"),
+        listings_source_url=values.get("LISTINGS_SOURCE_URL", ""),
+        listings_source_token=values.get("LISTINGS_SOURCE_TOKEN", ""),
     )
 
 

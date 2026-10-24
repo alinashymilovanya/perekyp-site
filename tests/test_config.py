@@ -21,6 +21,7 @@ class ConfigTests(unittest.TestCase):
             self.assertEqual(settings.telegram_bot_token, "secret-value")
             self.assertEqual(settings.telegram_chat_id, "123")
             self.assertEqual(settings.minimum_margin_rub, 700)
+            self.assertEqual(settings.listings_source, "disabled")
 
     def test_saves_chat_id_without_replacing_the_token(self):
         with tempfile.TemporaryDirectory() as directory:
