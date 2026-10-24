@@ -21,6 +21,10 @@ class Settings:
     listings_source: str = "disabled"
     listings_source_url: str = ""
     listings_source_token: str = ""
+    status_path: str = "data/runtime-status.json"
+    source_retry_base_seconds: int = 60
+    source_retry_max_seconds: int = 1_800
+    source_alert_after_seconds: int = 900
 
 
 def load_settings(path: str | Path = ".env") -> Settings:
@@ -52,6 +56,10 @@ def load_settings(path: str | Path = ".env") -> Settings:
         listings_source=values.get("LISTINGS_SOURCE", "disabled"),
         listings_source_url=values.get("LISTINGS_SOURCE_URL", ""),
         listings_source_token=values.get("LISTINGS_SOURCE_TOKEN", ""),
+        status_path=values.get("STATUS_PATH", "data/runtime-status.json"),
+        source_retry_base_seconds=int(values.get("SOURCE_RETRY_BASE_SECONDS", "60")),
+        source_retry_max_seconds=int(values.get("SOURCE_RETRY_MAX_SECONDS", "1800")),
+        source_alert_after_seconds=int(values.get("SOURCE_ALERT_AFTER_SECONDS", "900")),
     )
 
 

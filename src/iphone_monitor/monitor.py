@@ -6,11 +6,24 @@ from .formatter import ListingView, format_listing_message
 
 
 class Monitor:
-    def __init__(self, source, store, telegram, chat_id: str):
+    def __init__(
+        self,
+        source,
+        store,
+        telegram,
+        chat_id: str,
+        *,
+        delivery_rub: int = 400,
+        commission_rub: int = 0,
+        minimum_margin_rub: int = 500,
+    ):
         self.source = source
         self.store = store
         self.telegram = telegram
         self.chat_id = chat_id
+        self.delivery_rub = delivery_rub
+        self.commission_rub = commission_rub
+        self.minimum_margin_rub = minimum_margin_rub
 
     @staticmethod
     def _comparable_prices(listing: ParsedListing, listings: tuple[ParsedListing, ...]) -> list[int]:
@@ -34,7 +47,13 @@ class Monitor:
         for listing in listings:
             if self.store.has_seen(listing.item_id):
                 continue
-            analysis = analyze_listing(listing, self._comparable_prices(listing, listings))
+            analysis = analyze_listing(
+                listing,
+                self._comparable_prices(listing, listings),
+                delivery_rub=self.delivery_rub,
+                commission_rub=self.commission_rub,
+                minimum_margin_rub=self.minimum_margin_rub,
+            )
             view = ListingView(
                 title=listing.title,
                 price_rub=listing.price_rub,
