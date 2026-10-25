@@ -77,6 +77,12 @@ class SeenStore:
         ).fetchall()
         return tuple(NotifiedListing(*row) for row in rows)
 
+    def count_notified_since(self, start_at: str) -> int:
+        row = self._connection.execute(
+            "SELECT COUNT(*) FROM notified_listings WHERE notified_at >= ?", (start_at,)
+        ).fetchone()
+        return int(row[0])
+
     def get_metadata(self, key: str) -> str | None:
         row = self._connection.execute(
             "SELECT value FROM monitor_metadata WHERE key = ?", (key,)

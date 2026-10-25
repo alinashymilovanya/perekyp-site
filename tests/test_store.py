@@ -33,3 +33,12 @@ class SeenStoreTests(unittest.TestCase):
 
                 self.assertEqual(top[0].item_id, "123")
                 self.assertEqual(top[0].margin_rub, 8_100)
+
+    def test_persists_monitor_metadata_after_reopen(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "seen.sqlite3"
+            with SeenStore(path) as store:
+                store.set_metadata("telegram_chat_id", "123")
+
+            with SeenStore(path) as reopened:
+                self.assertEqual(reopened.get_metadata("telegram_chat_id"), "123")

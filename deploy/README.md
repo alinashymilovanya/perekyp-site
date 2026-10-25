@@ -20,11 +20,34 @@
 
    ```env
    TELEGRAM_BOT_TOKEN=...
-   TELEGRAM_CHAT_ID=...
    LISTINGS_SOURCE=json_api
    LISTINGS_SOURCE_URL=https://provider.example/iphone-feed
    LISTINGS_SOURCE_TOKEN=...
+   DAILY_SUMMARY_TIME=20:00
+   SUMMARY_TIMEZONE=Europe/Astrakhan
    ```
+
+   `TELEGRAM_CHAT_ID` можно указать сразу, но это необязательно: при первом `/start` бот сохранит ID в своей SQLite-базе на постоянном томе. Не присылайте значения токенов в чат. Время сводки записывается в формате `HH:MM`; по умолчанию это 20:00 по Астрахани.
+
+## Формат разрешённого источника
+
+Режим `json_api` ждёт HTTPS-ответ с массивом или объектом `{"items": [...]}`. Каждая запись должна иметь нормализованные поля `id`, `title`, `url`, `text` и `images` (массив URL изображений):
+
+```json
+{
+  "items": [
+    {
+      "id": "i123",
+      "title": "iPhone 13 128 ГБ",
+      "url": "https://provider.example/items/123",
+      "text": "iPhone 13 128 ГБ\n20 000 ₽\nХорошее\nАккумулятор 90%",
+      "images": ["https://provider.example/images/123.jpg"]
+    }
+  ]
+}
+```
+
+Провайдер должен иметь право отдавать эти данные. Адаптер не предназначен для обхода CAPTCHA, IP-блокировок или других ограничений сайта.
 
 5. Проверьте запуск вручную:
 

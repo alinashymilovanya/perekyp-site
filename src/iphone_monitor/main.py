@@ -1,11 +1,13 @@
 """Long-polling entry point for the Telegram bot."""
 
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 from .avito_browser import BrowserActError
 from .bot import handle_update
-from .config import load_settings, save_chat_id
+from .config import load_settings
+from .daily import send_daily_summary_if_due
 from .health import write_status
 from .json_api_source import ListingsSourceError
 from .monitor import Monitor
@@ -25,7 +27,7 @@ def run() -> None:
     database_path.parent.mkdir(parents=True, exist_ok=True)
     store = SeenStore(database_path)
     offset = None
-    chat_id = settings.telegram_chat_id
+    chat_id = settings.telegram_chat_id or store.get_metadata("telegram_chat_id")
     retry_schedule = RetrySchedule(
         base_delay_seconds=settings.source_retry_base_seconds,
         max_delay_seconds=settings.source_retry_max_seconds,
@@ -39,7 +41,16 @@ def run() -> None:
                 update_chat_id = handle_update(update, telegram)
                 if update_chat_id:
                     chat_id = update_chat_id
-                    save_chat_id(".env", update_chat_id)
+                    store.set_metadata("telegram_chat_id", update_chat_id)
+            if chat_id and send_daily_summary_if_due(
+                store,
+                telegram,
+                chat_id,
+                now=datetime.now(timezone.utc),
+                timezone_name=settings.summary_timezone,
+                summary_time=settings.daily_summary_time,
+            ):
+                log_event("daily_summary_sent")
             now = time.time()
             if source is not None and chat_id and retry_schedule.can_attempt(now):
                 try:
