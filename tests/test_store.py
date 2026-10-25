@@ -15,3 +15,21 @@ class SeenStoreTests(unittest.TestCase):
             self.assertTrue(store.has_seen("123"))
 
             store.close()
+
+    def test_stores_notified_listing_for_daily_summary(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with SeenStore(Path(directory) / "seen.sqlite3") as store:
+                store.record_notified(
+                    item_id="123",
+                    title="iPhone 13",
+                    price_rub=20_000,
+                    market_price_rub=30_000,
+                    margin_rub=8_100,
+                    url="https://example.test/123",
+                    notified_at="2026-10-24T12:00:00+00:00",
+                )
+
+                top = store.top_notified_since("2026-10-24T00:00:00+00:00")
+
+                self.assertEqual(top[0].item_id, "123")
+                self.assertEqual(top[0].margin_rub, 8_100)

@@ -68,3 +68,6 @@ class MonitorTests(unittest.TestCase):
                 self.assertEqual(sent, 1)
                 self.assertEqual(telegram.photos[0][0], "123")
                 self.assertIn("iPhone 13", telegram.messages[0][1])
+                notified = store.top_notified_since("2000-01-01T00:00:00+00:00")
+                self.assertEqual(notified[0].item_id, "2")
+                self.assertEqual(notified[0].price_rub, 25_000)
