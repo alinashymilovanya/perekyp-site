@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0c1725">
+    <meta name="description" content="Локальный кабинет мониторинга iPhone-объявлений и расчёта потенциальной маржи.">
+    <title>iPhone Monitor — кабинет</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/styles.css">
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Основная навигация">
+        <div class="brand">
+          <div class="brand-mark">IM</div>
+          <div><strong>iPhone</strong><span>Monitor</span></div>
+        </div>
+        <div class="workspace-label">Рабочее пространство</div>
+        <nav class="main-nav">
+          <button class="nav-item is-active" data-view="overview"><span class="nav-icon">◈</span>Обзор</button>
+          <button class="nav-item" data-view="listings"><span class="nav-icon">▤</span>Объявления</button>
+          <button class="nav-item" data-view="calculator"><span class="nav-icon">⊞</span>Калькулятор</button>
+        </nav>
+        <div class="sidebar-footer">
+          <div class="connection-line"><span class="status-dot" id="sidebar-dot"></span><span>Локальный режим</span></div>
+          <p>Данные читаются из папки бота. Секреты в браузер не передаются.</p>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <div class="breadcrumb"><span>Кабинет</span><b>/</b><strong id="page-title">Обзор</strong></div>
+          <div class="topbar-actions">
+            <span class="last-updated" id="last-updated">Загрузка данных…</span>
+            <button class="refresh-button" id="refresh-button" aria-label="Обновить данные"><span>↻</span><em>Обновить</em></button>
+          </div>
+        </header>
+
+        <div class="content-wrap">
+          <div class="load-error" id="load-error" role="alert" hidden></div>
+
+          <section class="page-view is-visible" id="view-overview" aria-labelledby="overview-title">
+            <div class="hero-heading">
+              <div>
+                <p class="eyebrow">Мониторинг iPhone <span class="eyebrow-line"></span></p>
+                <h1 id="overview-title">Покупки под контролем<span class="heading-dot">.</span></h1>
+                <p class="hero-copy">Собирайте выгодные находки, оценивайте маржу и принимайте решение до того, как объявление исчезнет.</p>
+              </div>
+              <div class="hero-note"><span class="note-icon">i</span><span>Сайт работает поверх<br>данных существующего бота</span></div>
+            </div>
+
+            <div class="status-banner" id="status-banner">
+              <div class="status-symbol"><span class="status-dot" id="status-dot"></span></div>
+              <div class="status-copy"><strong id="status-badge">Проверяем</strong><span id="status-text">Получаем статус процесса…</span></div>
+              <div class="status-meta"><span>Последний сигнал</span><strong id="heartbeat-time">—</strong></div>
+            </div>
+
+            <div class="stats-grid" aria-label="Ключевые показатели">
+              <article class="stat-card"><div class="stat-label"><span class="stat-icon blue">▤</span><span>Всего находок</span></div><strong class="stat-value" id="stat-listings">—</strong><span class="stat-caption">в истории бота</span></article>
+              <article class="stat-card"><div class="stat-label"><span class="stat-icon green">↗</span><span>Перспективных</span></div><strong class="stat-value" id="stat-promising">—</strong><span class="stat-caption">маржа от 500 ₽</span></article>
+              <article class="stat-card"><div class="stat-label"><span class="stat-icon amber">≈</span><span>Средняя маржа</span></div><strong class="stat-value" id="stat-average">—</strong><span class="stat-caption">по доступным расчётам</span></article>
+              <article class="stat-card"><div class="stat-label"><span class="stat-icon coral">★</span><span>Лучшая находка</span></div><strong class="stat-value" id="stat-best">—</strong><span class="stat-caption">максимальная маржа</span></article>
+            </div>
+
+            <div class="overview-grid">
+              <section class="panel system-panel">
+                <div class="panel-heading"><div><p class="eyebrow small">Контроль системы</p><h2>Состояние мониторинга</h2></div><span class="panel-kicker">LIVE</span></div>
+                <div class="system-list">
+                  <div class="system-row"><span class="system-name"><span class="mini-dot green-dot"></span>Процесс бота</span><strong class="value value-muted" id="source-state">—</strong></div>
+                  <div class="system-row"><span class="system-name"><span class="mini-dot blue-dot"></span>Ошибки источника</span><strong class="value" id="failure-count">—</strong></div>
+                  <div class="system-row"><span class="system-name"><span class="mini-dot amber-dot"></span>Хранилище данных</span><strong class="value value-success">SQLite</strong></div>
+                </div>
+                <div class="system-footnote"><span>●</span> Обновляется при каждом запросе</div>
+              </section>
+              <section class="panel quick-panel">
+                <div class="panel-heading"><div><p class="eyebrow small">Быстрый доступ</p><h2>Что сделать дальше</h2></div></div>
+                <button class="quick-action" data-view="listings"><span class="quick-number">01</span><span><strong>Посмотреть находки</strong><small>История уведомлений из бота</small></span><b>→</b></button>
+                <button class="quick-action" data-view="calculator"><span class="quick-number">02</span><span><strong>Посчитать сделку</strong><small>Проверить потенциальную маржу</small></span><b>→</b></button>
+              </section>
+            </div>
+
+            <section class="panel recent-panel"><div class="panel-heading"><div><p class="eyebrow small">История</p><h2>Последние находки</h2></div><button class="text-button" data-view="listings">Все объявления <span>→</span></button></div><div id="preview-list" class="listing-list"></div></section>
+          </section>
+
+          <section class="page-view" id="view-listings" aria-labelledby="listings-title">
+            <div class="section-heading"><div><p class="eyebrow">История мониторинга</p><h1 id="listings-title">Все объявления<span class="heading-dot">.</span></h1><p>Уведомления, которые бот сохранил в локальной базе.</p></div></div>
+            <section class="panel listings-panel">
+              <div class="listing-toolbar"><label class="search-field"><span>⌕</span><input id="search-input" type="search" placeholder="Поиск по названию" aria-label="Поиск по названию"></label><label class="sort-field"><span>Сортировка</span><select id="sort-select"><option value="margin">По марже</option><option value="date">По дате</option></select></label><span class="listing-count" id="listing-count">—</span></div>
+              <div id="listings-container" class="listing-list"></div>
+            </section>
+          </section>
+
+          <section class="page-view" id="view-calculator" aria-labelledby="calculator-title">
+            <div class="section-heading"><div><p class="eyebrow">Инструмент решения</p><h1 id="calculator-title">Калькулятор сделки<span class="heading-dot">.</span></h1><p>Та же формула, которую бот использует для оценки потенциальной маржи.</p></div></div>
+            <div class="calculator-layout">
+              <section class="panel calculator-form"><div class="panel-heading"><div><p class="eyebrow small">Ввод данных</p><h2>Параметры объявления</h2></div></div><div class="form-grid"><label>Цена объявления<input id="calc-price" type="number" min="0" value="40000"><span>₽</span></label><label>Рыночная цена<input id="calc-market" type="number" min="0" value="50000"><span>₽</span></label><label>Доставка<input id="calc-delivery" type="number" min="0" value="400"><span>₽</span></label><label>Комиссия<input id="calc-commission" type="number" min="0" value="0"><span>₽</span></label><label>Резерв ремонта<input id="calc-reserve" type="number" min="0" value="1500"><span>₽</span></label></div><p class="formula-note">Маржа = рынок − цена − доставка − комиссия − резерв ремонта</p></section>
+              <section class="calculator-result-card"><p class="eyebrow small">Результат оценки</p><div id="calc-result" class="calculator-result">—</div><p id="calc-verdict" class="calc-verdict">—</p><div class="result-divider"></div><p class="result-hint">Порог перспективной сделки<br><strong>500 ₽</strong></p></section>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>
