@@ -1,0 +1,11 @@
+{
+  "status": {
+    "healthy": false,
+    "monitoring_enabled": false,
+    "source_failure_count": 0,
+    "heartbeat_at": null,
+    "heartbeat_iso": null,
+    "error": "Бот пока не подключён"
+  },
+  "items": []
+}

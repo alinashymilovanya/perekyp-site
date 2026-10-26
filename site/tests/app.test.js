@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { calculateMargin, formatRubles, sortListings } from "../app.js";
+import { calculateMargin, dashboardDataFromStatic, formatRubles, sortListings } from "../app.js";
 
 test("calculates the same margin formula as the bot", () => {
   assert.equal(
@@ -23,4 +23,11 @@ test("sorts listings by calculated margin with unknown values last", () => {
   ];
 
   assert.deepEqual(sortListings(listings).map((listing) => listing.item_id), ["c", "b", "a"]);
+});
+
+test("marks the InfinityFree fallback as a static demo mode", () => {
+  const dashboard = dashboardDataFromStatic({ status: { monitoring_enabled: false }, items: [] });
+
+  assert.equal(dashboard.status.static_mode, true);
+  assert.deepEqual(dashboard.listings, []);
 });

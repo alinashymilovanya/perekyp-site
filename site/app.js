@@ -23,6 +23,13 @@ export function sortListings(listings) {
   });
 }
 
+export function dashboardDataFromStatic(payload) {
+  return {
+    status: { ...(payload.status ?? {}), static_mode: true },
+    listings: payload.items ?? [],
+  };
+}
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -57,19 +64,22 @@ function renderStatus() {
   const text = byId("status-text");
   const dot = byId("status-dot");
   const isHealthy = status.healthy === true;
+  const isStatic = status.static_mode === true;
 
-  banner.classList.toggle("is-warning", !isHealthy);
-  dot.classList.toggle("is-warning", !isHealthy);
-  badge.textContent = isHealthy ? "Онлайн" : "Нет связи";
-  badge.className = `badge ${isHealthy ? "badge-success" : "badge-warning"}`;
-  text.textContent = isHealthy
+  banner.classList.toggle("is-warning", !isHealthy || isStatic);
+  dot.classList.toggle("is-warning", !isHealthy || isStatic);
+  badge.textContent = isStatic ? "Демо-режим" : isHealthy ? "Онлайн" : "Нет связи";
+  badge.className = `badge ${isHealthy && !isStatic ? "badge-success" : "badge-warning"}`;
+  text.textContent = isStatic
+    ? "Сайт опубликован, данные бота пока не подключены"
+    : isHealthy
     ? status.monitoring_enabled
       ? "Бот отвечает, мониторинг активен"
       : "Бот отвечает, источник объявлений отключён"
     : status.error || "Сигнал от бота не получен";
 
-  byId("source-state").textContent = status.monitoring_enabled ? "Активен" : "Отключён";
-  byId("source-state").className = status.monitoring_enabled ? "value value-success" : "value value-muted";
+  byId("source-state").textContent = isStatic ? "Не подключён" : status.monitoring_enabled ? "Активен" : "Отключён";
+  byId("source-state").className = status.monitoring_enabled && !isStatic ? "value value-success" : "value value-muted";
   byId("failure-count").textContent = String(status.source_failure_count ?? 0);
   byId("heartbeat-time").textContent = formatDate(status.heartbeat_iso);
 }
@@ -122,19 +132,41 @@ function renderError(error) {
   byId("load-error").textContent = `Не удалось загрузить данные: ${error.message}. Проверьте, что сайт запущен через server.py.`;
 }
 
+function shouldUseStaticData() {
+  const hostname = window.location.hostname;
+  return new URLSearchParams(window.location.search).has("static") || !["127.0.0.1", "localhost"].includes(hostname);
+}
+
+function applyDashboardData(status, listings) {
+  state.status = status;
+  state.listings = listings;
+  renderStatus();
+  renderMetrics();
+  renderListings();
+}
+
 async function loadDashboard() {
   byId("load-error").hidden = true;
   byId("refresh-button").classList.add("is-loading");
   try {
+    if (shouldUseStaticData()) {
+      const staticData = dashboardDataFromStatic(await getJson("/site-data.json"));
+      applyDashboardData(staticData.status, staticData.listings);
+      byId("last-updated").textContent = "Статическая версия сайта";
+      return;
+    }
+
     const [status, listingsResponse] = await Promise.all([getJson("/api/status"), getJson("/api/listings?limit=100")]);
-    state.status = status;
-    state.listings = listingsResponse.items ?? [];
-    renderStatus();
-    renderMetrics();
-    renderListings();
+    applyDashboardData(status, listingsResponse.items ?? []);
     byId("last-updated").textContent = `Обновлено ${new Intl.DateTimeFormat("ru-RU", { hour: "2-digit", minute: "2-digit" }).format(new Date())}`;
   } catch (error) {
-    renderError(error);
+    try {
+      const staticData = dashboardDataFromStatic(await getJson("/site-data.json"));
+      applyDashboardData(staticData.status, staticData.listings);
+      byId("last-updated").textContent = "Статическая версия сайта";
+    } catch (staticError) {
+      renderError(staticError);
+    }
   } finally {
     byId("refresh-button").classList.remove("is-loading");
   }
