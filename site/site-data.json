@@ -1,31 +1,11 @@
 {
   "status": {
-    "healthy": true,
-    "live": true,
-    "monitoring_enabled": true,
+    "healthy": false,
+    "monitoring_enabled": false,
     "source_failure_count": 0,
-    "heartbeat_at": 1793380157.9087808,
-    "heartbeat_iso": "2026-10-30T17:09:17.908781+00:00",
-    "error": null
+    "heartbeat_at": null,
+    "heartbeat_iso": null,
+    "error": "Бот пока не подключён"
   },
-  "items": [
-    {
-      "item_id": "8401832463",
-      "notified_at": "2026-10-30T16:57:36.536671+00:00",
-      "title": "iPhone 14 Pro, 256 ГБ, 2 SIM",
-      "price_rub": 33000,
-      "market_price_rub": 38000,
-      "margin_rub": 3100,
-      "url": "https://www.avito.ru/moskva/telefony/iphone_14_pro_256_gb_2_sim_8401832463"
-    },
-    {
-      "item_id": "8499243676",
-      "notified_at": "2026-10-30T16:06:48.653565+00:00",
-      "title": "iPhone 17, 256 ГБ, eSIM",
-      "price_rub": 58990,
-      "market_price_rub": 79000,
-      "margin_rub": 18110,
-      "url": "https://www.avito.ru/lyubertsy/telefony/iphone_17_256_gb_esim_8499243676"
-    }
-  ]
+  "items": []
 }

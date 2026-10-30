@@ -260,6 +260,7 @@ def run() -> None:
             log_event("database_backup_failed", error=str(exc))
 
         now = time.time()
+        sent_now = 0
         monitoring_paused = store.get_metadata("monitor_paused") == "1"
         if source is not None and chat_ids and not monitoring_paused and retry_schedule.can_attempt(now):
             try:
@@ -277,6 +278,7 @@ def run() -> None:
                 ).process_once()
                 retry_schedule.record_success(now)
                 retry_schedule.next_attempt_at = now + settings.poll_interval_seconds
+                sent_now = sent
                 log_event("monitoring_poll_succeeded", notified_count=sent)
             except (AvitoApiError, BrowserActError, ListingsSourceError, ValueError) as exc:
                 retry_schedule.record_failure(now)
@@ -317,7 +319,7 @@ def run() -> None:
         )
 
         try:
-            publish_site_data(store, settings)
+            publish_site_data(store, settings, force=sent_now > 0)
         except (OSError, ValueError, ftplib.all_errors) as exc:
             log_event("site_data_publish_failed", error=str(exc))
 
