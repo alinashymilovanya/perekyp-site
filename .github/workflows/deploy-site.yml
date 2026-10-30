@@ -1,0 +1,39 @@
+name: Deploy website to InfinityFree
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "site/**"
+      - ".github/workflows/deploy-site.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: infinityfree-site
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Upload static site
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.INFINITY_FTP_HOST }}
+          username: ${{ secrets.INFINITY_FTP_USERNAME }}
+          password: ${{ secrets.INFINITY_FTP_PASSWORD }}
+          protocol: ftp
+          port: 21
+          local-dir: ./site/
+          server-dir: /htdocs/
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*/**
+            **/.git*
+            **/server.py
+            **/tests/**
+            **/README.md
+            **/package.json
