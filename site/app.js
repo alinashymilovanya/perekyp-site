@@ -66,6 +66,11 @@ export function isStale(iso, now = Date.now(), minutes = STALE_AFTER_MINUTES) {
   return now - time > minutes * 60 * 1000;
 }
 
+function describeSnapshot(status) {
+  if (!status || status.static_mode === true) return "Демо-версия без данных бота";
+  return `Данные бота, снимок от ${formatDate(status.heartbeat_iso)}`;
+}
+
 function renderStatus() {
   const status = state.status ?? {};
   const banner = byId("status-banner");
@@ -164,7 +169,7 @@ async function loadDashboard() {
     if (shouldUseStaticData()) {
       const staticData = dashboardDataFromStatic(await getJson("/site-data.json"));
       applyDashboardData(staticData.status, staticData.listings);
-      byId("last-updated").textContent = "Статическая версия сайта";
+      byId("last-updated").textContent = describeSnapshot(staticData.status);
       return;
     }
 
@@ -175,7 +180,7 @@ async function loadDashboard() {
     try {
       const staticData = dashboardDataFromStatic(await getJson("/site-data.json"));
       applyDashboardData(staticData.status, staticData.listings);
-      byId("last-updated").textContent = "Статическая версия сайта";
+      byId("last-updated").textContent = describeSnapshot(staticData.status);
     } catch (staticError) {
       renderError(staticError);
     }
