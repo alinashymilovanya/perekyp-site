@@ -4,109 +4,24 @@
     "live": true,
     "monitoring_enabled": true,
     "source_failure_count": 0,
-    "heartbeat_at": 1793384305.5888221,
-    "heartbeat_iso": "2026-10-30T18:18:25.588822+00:00",
-    "error": null
-  },
-  "items": [
-    {
-      "item_id": "8398656815",
-      "notified_at": "2026-10-30T17:48:24.424822+00:00",
-      "title": "iPhone 13, 128 ГБ, SIM + eSIM",
-      "price_rub": 17900,
-      "market_price_rub": 23990,
-      "margin_rub": 4190,
-      "url": "https://www.avito.ru/moskva/telefony/iphone_13_128_gb_sim_esim_8398656815"
-    },
-    {
-      "item_id": "8514457274",
-      "notified_at": "2026-10-30T17:48:23.177863+00:00",
-      "title": "iPhone 17, 256 ГБ, eSIM",
-      "price_rub": 59500,
-      "market_price_rub": 69990,
-      "margin_rub": 8590,
-      "url": "https://www.avito.ru/monino/telefony/iphone_17_256_gb_esim_8514457274"
-    },
-    {
-      "item_id": "8490234158",
-      "notified_at": "2026-10-30T17:48:21.479853+00:00",
-      "title": "iPhone 17 Pro Max, 1 ТБ, eSIM",
-      "price_rub": 119900,
-      "market_price_rub": 124945,
-      "margin_rub": 3145,
-      "url": "https://www.avito.ru/moskva/telefony/iphone_17_pro_max_1_tb_esim_8490234158"
-    },
-    {
-      "item_id": "8347764585",
-      "notified_at": "2026-10-30T17:48:20.157417+00:00",
-      "title": "iPhone 17 Pro Max, 1 ТБ, 1 SIM",
-      "price_rub": 119900,
-      "market_price_rub": 124945,
-      "margin_rub": 3145,
-      "url": "https://www.avito.ru/moskva/telefony/iphone_17_pro_max_1_tb_1_sim_8347764585"
-    },
-    {
-      "item_id": "8515070026",
-      "notified_at": "2026-10-30T17:48:17.508910+00:00",
-      "title": "iPhone 16 Pro Max, 512 ГБ, SIM + eSIM",
-      "price_rub": 80000,
-      "market_price_rub": 88000,
-      "margin_rub": 6100,
-      "url": "https://www.avito.ru/balashiha/telefony/iphone_16_pro_max_512_gb_sim_esim_8515070026"
-    },
-    {
-      "item_id": "8517793153",
-      "notified_at": "2026-10-30T17:48:16.187909+00:00",
-      "title": "iPhone 17 Pro Max, 1 ТБ, SIM + eSIM",
-      "price_rub": 119900,
-      "market_price_rub": 124945,
-      "margin_rub": 3145,
-      "url": "https://www.avito.ru/moskva/telefony/iphone_17_pro_max_1_tb_sim_esim_8517793153"
-    },
-    {
-      "item_id": "8423286907",
-      "notified_at": "2026-10-30T17:48:14.425351+00:00",
-      "title": "iPhone 18 Pro Max, 256 ГБ, eSIM",
-      "price_rub": 132000,
-      "market_price_rub": 136000,
-      "margin_rub": 2100,
-      "url": "https://www.avito.ru/ramenskoe/telefony/iphone_18_pro_max_256_gb_esim_8423286907"
-    },
-    {
-      "item_id": "8400220632",
-      "notified_at": "2026-10-30T17:48:13.565350+00:00",
-      "title": "iPhone 16 Pro Max, 512 ГБ, SIM + eSIM",
-      "price_rub": 53000,
-      "market_price_rub": 88000,
-      "margin_rub": 33100,
-      "url": "https://www.avito.ru/moskva/telefony/iphone_16_pro_max_512_gb_sim_esim_8400220632"
-    },
-    {
-      "item_id": "8370814000",
-      "notified_at": "2026-10-30T17:48:12.128995+00:00",
-      "title": "iPhone 15, 128 ГБ, 2 SIM",
-      "price_rub": 30499,
-      "market_price_rub": 34000,
-      "margin_rub": 1601,
-      "url": "https://www.avito.ru/lyubertsy/telefony/iphone_15_128_gb_2_sim_8370814000"
-    },
-    {
-      "item_id": "8401832463",
-      "notified_at": "2026-10-30T16:57:36.536671+00:00",
-      "title": "iPhone 14 Pro, 256 ГБ, 2 SIM",
-      "price_rub": 33000,
-      "market_price_rub": 38000,
-      "margin_rub": 3100,
-      "url": "https://www.avito.ru/moskva/telefony/iphone_14_pro_256_gb_2_sim_8401832463"
-    },
-    {
-      "item_id": "8499243676",
-      "notified_at": "2026-10-30T16:06:48.653565+00:00",
-      "title": "iPhone 17, 256 ГБ, eSIM",
-      "price_rub": 58990,
-      "market_price_rub": 79000,
-      "margin_rub": 18110,
-      "url": "https://www.avito.ru/lyubertsy/telefony/iphone_17_256_gb_esim_8499243676"
+    "heartbeat_at": 1793385418.8934724,
+    "heartbeat_iso": "2026-10-30T18:36:58.893472+00:00",
+    "error": null,
+    "host": "run-pereekyp-56f949d68-sb5vz",
+    "diag": {
+      "last_cycle": {
+        "at": "2026-10-30T18:33:16.582624+00:00",
+        "fetched": 52,
+        "new": 0,
+        "skipped_low_margin": 0,
+        "notified": 0,
+        "best_margin_rub": null
+      },
+      "last_source_error": null,
+      "seen_total": 53,
+      "pending_notifications": 0,
+      "subscribers": 1
     }
-  ]
+  },
+  "items": []
 }
