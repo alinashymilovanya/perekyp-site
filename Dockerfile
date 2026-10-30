@@ -18,8 +18,8 @@ COPY src /app/src
 COPY tasks /app/tasks
 
 # Каталог для базы, логов и очереди уведомлений (в Amvera сюда монтируется /data).
-RUN mkdir -p /data && useradd --create-home --uid 10001 bot && chown -R bot:bot /app /data
-
-USER bot
+# Контейнер работает от root: платформа монтирует /data со своими правами,
+# и любой другой пользователь получает "attempt to write a readonly database".
+RUN mkdir -p /data && chmod 777 /data
 
 CMD ["python", "-m", "iphone_monitor.main"]

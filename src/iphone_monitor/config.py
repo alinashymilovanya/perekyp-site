@@ -21,6 +21,7 @@ class Settings:
     commission_rub: int = 0
     repair_reserve_used_rub: int = 1_500
     repair_reserve_broken_rub: int = 10_000
+    weak_deal_margin_rub: int = 1_500
     browser_act_path: str = "browser-act"
     avito_browser_id: str = ""
     avito_session_name: str = "avito-check"
@@ -109,6 +110,7 @@ def load_settings(path: str | Path = ".env") -> Settings:
         commission_rub=int(values.get("COMMISSION_RUB", "0")),
         repair_reserve_used_rub=int(values.get("REPAIR_RESERVE_USED_RUB", "1500")),
         repair_reserve_broken_rub=int(values.get("REPAIR_RESERVE_BROKEN_RUB", "10000")),
+        weak_deal_margin_rub=int(values.get("WEAK_DEAL_MARGIN_RUB", "1500")),
         browser_act_path=values.get("BROWSER_ACT_PATH", "browser-act"),
         avito_browser_id=values.get("AVITO_BROWSER_ID", ""),
         avito_session_name=values.get("AVITO_SESSION_NAME", "avito-check"),

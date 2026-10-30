@@ -47,11 +47,22 @@ class SeenStore:
             "kind TEXT NOT NULL, text TEXT NOT NULL, photo TEXT, "
             "created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)"
         )
+        self._ensure_column("notified_listings", "model", "TEXT")
+        self._ensure_column("notified_listings", "storage_gb", "INTEGER")
         self._connection.execute(
             "CREATE INDEX IF NOT EXISTS listing_prices_model "
             "ON listing_prices(model, storage_gb, condition)"
         )
         self._connection.commit()
+
+    def _ensure_column(self, table: str, column: str, kind: str) -> None:
+        """Add a column to an existing database without losing data."""
+        existing = {
+            row[1]
+            for row in self._connection.execute(f"PRAGMA table_info({table})").fetchall()
+        }
+        if column not in existing:
+            self._connection.execute(f"ALTER TABLE {table} ADD COLUMN {column} {kind}")
 
     def has_seen(self, item_id: str) -> bool:
         row = self._connection.execute(
@@ -84,14 +95,44 @@ class SeenStore:
         margin_rub: int | None,
         url: str,
         notified_at: str,
+        model: str | None = None,
+        storage_gb: int | None = None,
     ) -> None:
         self._connection.execute(
             "INSERT OR REPLACE INTO notified_listings "
-            "(item_id, notified_at, title, price_rub, market_price_rub, margin_rub, url) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?)",
-            (item_id, notified_at, title, price_rub, market_price_rub, margin_rub, url),
+            "(item_id, notified_at, title, price_rub, market_price_rub, margin_rub, url, "
+            "model, storage_gb) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                item_id,
+                notified_at,
+                title,
+                price_rub,
+                market_price_rub,
+                margin_rub,
+                url,
+                model,
+                storage_gb,
+            ),
         )
         self._connection.commit()
+
+    def count_similar_notified(
+        self,
+        *,
+        model: str,
+        storage_gb: int | None,
+        price_rub: int,
+        since: str,
+    ) -> int:
+        """How often the same model, storage and price was already announced."""
+        row = self._connection.execute(
+            "SELECT COUNT(*) FROM notified_listings "
+            "WHERE price_rub = ? AND COALESCE(model, '') = ? "
+            "AND COALESCE(storage_gb, -1) = ? AND notified_at >= ?",
+            (price_rub, model, -1 if storage_gb is None else storage_gb, since),
+        ).fetchone()
+        return int(row[0])
 
     def top_notified_since(self, start_at: str, limit: int = 5) -> tuple[NotifiedListing, ...]:
         rows = self._connection.execute(

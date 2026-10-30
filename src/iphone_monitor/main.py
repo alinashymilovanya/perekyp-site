@@ -275,6 +275,7 @@ def run() -> None:
                     notify_min_margin_rub=settings.notify_min_margin_rub,
                     repair_reserve_used_rub=settings.repair_reserve_used_rub,
                     repair_reserve_broken_rub=settings.repair_reserve_broken_rub,
+                    weak_deal_margin_rub=settings.weak_deal_margin_rub,
                 ).process_once()
                 retry_schedule.record_success(now)
                 retry_schedule.next_attempt_at = now + settings.poll_interval_seconds
