@@ -44,6 +44,21 @@ def call(method: str, url: str, token: str, payload=None) -> dict:
     return json.loads(body) if body else {}
 
 
+REQUIRED_PATHS = (".github/workflows/deploy-site.yml",)
+
+
+def missing_required(tree_sha: str, token: str, repo: str) -> list[str]:
+    """Return required files that the new tree would silently drop."""
+    url = f"{API}/repos/{repo}/git/trees/{tree_sha}?recursive=1"
+    try:
+        tree = call("GET", url, token)
+    except SystemExit as exc:
+        print(f"warning: could not verify required files: {exc}")
+        return []
+    present = {item.get("path") for item in tree.get("tree", [])}
+    return [path for path in REQUIRED_PATHS if path not in present]
+
+
 def collect() -> list[Path]:
     files = []
     for path in sorted(ROOT.rglob("*")):
@@ -109,6 +124,13 @@ def main() -> int:
         token,
         {"message": message, "tree": tree["sha"], "parents": [head]},
     )
+    missing = missing_required(new_commit["tree"]["sha"], token, repo)
+    if missing:
+        raise SystemExit(
+            "refusing to move the branch: these files would disappear from the repo: "
+            + ", ".join(missing)
+            + " (a workflow file needs the 'workflow' token scope; restore it in the web UI)"
+        )
     call(
         "PATCH",
         f"{API}/repos/{repo}/git/refs/heads/{branch}",
