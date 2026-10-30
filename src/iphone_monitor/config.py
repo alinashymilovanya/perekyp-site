@@ -58,6 +58,7 @@ class Settings:
     github_repo: str = ""
     github_site_path: str = "site/site-data.json"
     github_branch: str = "master"
+    seed_state_path: str = "assets/seed_state.json"
 
 
 def _validate_daily_summary_schedule(summary_time: str, timezone_name: str) -> None:
@@ -149,6 +150,7 @@ def load_settings(path: str | Path = ".env") -> Settings:
         github_repo=values.get("GITHUB_REPO", ""),
         github_site_path=values.get("GITHUB_SITE_PATH", "site/site-data.json"),
         github_branch=values.get("GITHUB_BRANCH", "master"),
+        seed_state_path=values.get("SEED_STATE_PATH", "assets/seed_state.json"),
     )
 
 

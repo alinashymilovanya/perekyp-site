@@ -260,6 +260,63 @@ class SeenStore:
         row = self._connection.execute("SELECT COUNT(*) FROM subscribers").fetchone()
         return int(row[0])
 
+    def import_state(self, payload: dict) -> dict:
+        """Merge a state snapshot: history, announced deals, prices, readers.
+
+        Used once when the bot moves to a new machine, so it neither forgets
+        what it already announced nor announces the same deal twice.
+        """
+        counts = {"seen": 0, "notified": 0, "prices": 0, "subscribers": 0}
+        for row in payload.get("seen_listings", []):
+            cursor = self._connection.execute(
+                "INSERT OR IGNORE INTO seen_listings(item_id, first_seen_at) "
+                "VALUES (?, COALESCE(?, CURRENT_TIMESTAMP))",
+                (str(row["item_id"]), row.get("first_seen_at") or None),
+            )
+            counts["seen"] += max(cursor.rowcount, 0)
+        for row in payload.get("notified_listings", []):
+            cursor = self._connection.execute(
+                "INSERT OR IGNORE INTO notified_listings "
+                "(item_id, notified_at, title, price_rub, market_price_rub, margin_rub, "
+                "url, model, storage_gb) "
+                "VALUES (?, COALESCE(?, CURRENT_TIMESTAMP), ?, ?, ?, ?, ?, ?, ?)",
+                (
+                    str(row["item_id"]),
+                    row.get("notified_at") or None,
+                    row["title"],
+                    int(row["price_rub"]),
+                    row.get("market_price_rub"),
+                    row.get("margin_rub"),
+                    row["url"],
+                    row.get("model"),
+                    row.get("storage_gb"),
+                ),
+            )
+            counts["notified"] += max(cursor.rowcount, 0)
+        for row in payload.get("listing_prices", []):
+            cursor = self._connection.execute(
+                "INSERT OR IGNORE INTO listing_prices "
+                "(item_id, model, storage_gb, condition, price_rub, seen_at) "
+                "VALUES (?, ?, ?, ?, ?, COALESCE(?, CURRENT_TIMESTAMP))",
+                (
+                    str(row["item_id"]),
+                    row["model"],
+                    row.get("storage_gb"),
+                    row.get("condition"),
+                    int(row["price_rub"]),
+                    row.get("seen_at") or None,
+                ),
+            )
+            counts["prices"] += max(cursor.rowcount, 0)
+        for row in payload.get("subscribers", []):
+            chat_id = row["chat_id"] if isinstance(row, dict) else row
+            cursor = self._connection.execute(
+                "INSERT OR IGNORE INTO subscribers(chat_id) VALUES (?)", (str(chat_id),)
+            )
+            counts["subscribers"] += max(cursor.rowcount, 0)
+        self._connection.commit()
+        return counts
+
     def get_metadata(self, key: str) -> str | None:
         row = self._connection.execute(
             "SELECT value FROM monitor_metadata WHERE key = ?", (key,)

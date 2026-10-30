@@ -175,6 +175,31 @@ def flush_pending_notifications(store, telegram, limit: int = 10) -> int:
     return delivered
 
 
+def apply_seed_state(store, settings) -> dict | None:
+    """Merge the carried-over state once, when the bot starts on a new machine."""
+    if not getattr(settings, "seed_state_path", ""):
+        return None
+    if store.get_metadata("seed_state_applied") == "1":
+        return None
+    path = Path(settings.seed_state_path)
+    if not path.is_file():
+        log_event("seed_state_missing", path=str(path))
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        log_event("seed_state_failed", error=str(exc))
+        return None
+    try:
+        counts = store.import_state(payload)
+    except (sqlite3.Error, KeyError, ValueError) as exc:
+        log_event("seed_state_failed", error=f"{type(exc).__name__}: {exc}")
+        return None
+    store.set_metadata("seed_state_applied", "1")
+    log_event("seed_state_applied", **counts)
+    return counts
+
+
 def run() -> None:
     settings = load_settings()
     configure_logging(settings.log_path)
@@ -189,6 +214,7 @@ def run() -> None:
     store = SeenStore(database_path)
     if settings.telegram_chat_id:
         store.add_subscriber(settings.telegram_chat_id)
+    apply_seed_state(store, settings)
     if isinstance(source, AvitoApiSource):
         try:
             warm_up_price_history(source, store)

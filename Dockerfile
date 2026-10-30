@@ -16,6 +16,7 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 
 COPY src /app/src
 COPY tasks /app/tasks
+COPY assets /app/assets
 
 # Каталог для базы, логов и очереди уведомлений (в Amvera сюда монтируется /data).
 # Контейнер работает от root: платформа монтирует /data со своими правами,
