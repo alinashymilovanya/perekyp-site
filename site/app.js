@@ -39,6 +39,8 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+const STALE_AFTER_MINUTES = 45;
+
 function byId(id) {
   return document.getElementById(id);
 }
@@ -57,14 +59,22 @@ async function getJson(url) {
   return response.json();
 }
 
+export function isStale(iso, now = Date.now(), minutes = STALE_AFTER_MINUTES) {
+  if (!iso) return false;
+  const time = new Date(iso).getTime();
+  if (Number.isNaN(time)) return false;
+  return now - time > minutes * 60 * 1000;
+}
+
 function renderStatus() {
   const status = state.status ?? {};
   const banner = byId("status-banner");
   const badge = byId("status-badge");
   const text = byId("status-text");
   const dot = byId("status-dot");
-  const isHealthy = status.healthy === true;
   const isStatic = status.static_mode === true;
+  const stale = !isStatic && isStale(status.heartbeat_iso);
+  const isHealthy = status.healthy === true && !stale;
 
   banner.classList.toggle("is-warning", !isHealthy || isStatic);
   dot.classList.toggle("is-warning", !isHealthy || isStatic);
@@ -72,6 +82,8 @@ function renderStatus() {
   badge.className = `badge ${isHealthy && !isStatic ? "badge-success" : "badge-warning"}`;
   text.textContent = isStatic
     ? "Сайт опубликован, данные бота пока не подключены"
+    : stale
+    ? `Данные устарели: бот не выходил на связь с ${formatDate(status.heartbeat_iso)}`
     : isHealthy
     ? status.monitoring_enabled
       ? "Бот отвечает, мониторинг активен"

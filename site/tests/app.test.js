@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { calculateMargin, dashboardDataFromStatic, formatRubles, sortListings } from "../app.js";
+import { calculateMargin, dashboardDataFromStatic, formatRubles, isStale, sortListings } from "../app.js";
 
 test("calculates the same margin formula as the bot", () => {
   assert.equal(
@@ -40,4 +40,13 @@ test("treats a published live snapshot as real data", () => {
 
   assert.equal(dashboard.status.static_mode, false);
   assert.equal(dashboard.status.healthy, true);
+});
+
+test("marks a heartbeat older than the polling window as stale", () => {
+  const now = Date.parse("2026-10-31T00:00:00Z");
+
+  assert.equal(isStale("2026-10-30T23:30:00Z", now), false);
+  assert.equal(isStale("2026-10-30T22:00:00Z", now), true);
+  assert.equal(isStale("", now), false);
+  assert.equal(isStale("not a date", now), false);
 });
