@@ -1,92 +1,88 @@
-# Развёртывание на VPS
+# Развёртывание бота
 
-## Что понадобится от владельца
+Бот — обычный Python-процесс без входящего HTTP. Ему нужны только: интернет
+до Авито, доступ до Telegram и постоянный каталог `/data` (база, журнал,
+очередь уведомлений, сессия Telegram).
 
-1. VPS с Ubuntu 24.04 или аналогичным Linux и постоянным доступом в интернет.
-2. Разрешённый источник объявлений: API URL и токен от официального или лицензированного поставщика.
-3. Новый токен Telegram-бота. Его нужно ввести только в `.env` на VPS.
+## Вариант 1. Amvera (основной)
 
-## Подготовка VPS
+1. В Amvera создайте проект типа **Приложение**, окружение **Docker**, тариф с
+   постоянным хранилищем (минимум 1 ГБ).
+2. Загрузите проект: подключите GitHub-репозиторий или загрузите архив с кодом.
+   В корне уже лежат `Dockerfile` и `amvera.yaml` (`persistenceMount: /data`).
+3. В разделе **Переменные** добавьте секреты (значения из локального `.env`):
+   `TELEGRAM_BOT_TOKEN`, при необходимости `TELEGRAM_CHAT_ID`,
+   `TELEGRAM_TRANSPORT`, `TELEGRAM_PROXY`, а также настройки маржи и интервала.
+   Файл `.env` в git не попадает и в контейнер не копируется — на сервере
+   настройки берутся именно из переменных окружения.
+4. Запустите сборку и дождитесь статуса «Приложение запущено».
+5. В логах проекта должно появиться `bot_started`, затем
+   `monitoring_poll_succeeded`. В Telegram пришлите боту `/start` — он
+   запомнит чат и начнёт присылать карточки.
 
-1. Установите Docker Engine и Docker Compose plugin по официальной инструкции Docker для вашего дистрибутива.
-2. Установите часовой пояс Астрахани:
+### Telegram с сервера
 
-   ```bash
-   sudo timedatectl set-timezone Europe/Astrakhan
-   ```
+По умолчанию `TELEGRAM_TRANSPORT=botapi`: из дата-центра Bot API обычно
+доступен. Если запросы к `api.telegram.org` блокируются, переключите
+транспорт на MTProto и укажите прокси в том же формате, что и дома:
 
-3. Скопируйте проект в `/opt/iphone-monitor`.
-4. Внутри этой папки создайте `.env` из `.env.example` и заполните только секреты и настройки источника:
-
-   ```env
-   TELEGRAM_BOT_TOKEN=...
-   LISTINGS_SOURCE=json_api
-   LISTINGS_SOURCE_URL=https://provider.example/iphone-feed
-   LISTINGS_SOURCE_TOKEN=...
-   DAILY_SUMMARY_TIME=20:00
-   SUMMARY_TIMEZONE=Europe/Astrakhan
-   ```
-
-   `TELEGRAM_CHAT_ID` можно указать сразу, но это необязательно: при первом `/start` бот сохранит ID в своей SQLite-базе на постоянном томе. Не присылайте значения токенов в чат. Время сводки записывается в формате `HH:MM`; по умолчанию это 20:00 по Астрахани.
-
-## Формат разрешённого источника
-
-Режим `json_api` ждёт HTTPS-ответ с массивом или объектом `{"items": [...]}`. Каждая запись должна иметь нормализованные поля `id`, `title`, `url`, `text` и `images` (массив URL изображений):
-
-```json
-{
-  "items": [
-    {
-      "id": "i123",
-      "title": "iPhone 13 128 ГБ",
-      "url": "https://provider.example/items/123",
-      "text": "iPhone 13 128 ГБ\n20 000 ₽\nХорошее\nАккумулятор 90%",
-      "images": ["https://provider.example/images/123.jpg"]
-    }
-  ]
-}
+```env
+TELEGRAM_TRANSPORT=mtproto
+TELEGRAM_PROXY=host:port:secret
 ```
 
-Провайдер должен иметь право отдавать эти данные. Адаптер не предназначен для обхода CAPTCHA, IP-блокировок или других ограничений сайта.
+Сессия создаётся при первом запуске в `/data/bot_mtproto.session`, поэтому
+повторный вход не требуется. Если прокси недоступен, сообщения не теряются:
+они складываются в очередь `pending_notifications` и уходят, когда связь
+восстанавливается.
 
-5. Проверьте запуск вручную:
+### Часовой пояс
 
-   ```bash
-   cd /opt/iphone-monitor
-   sudo docker compose up --build
-   ```
+Серверы Amvera работают в UTC. В `Dockerfile` уже задано
+`TZ=Europe/Astrakhan`, а ежедневная сводка считается по
+`SUMMARY_TIMEZONE=Europe/Astrakhan`, поэтому время 20:00 остаётся астраханским.
 
-   Убедитесь, что контейнер получает статус `healthy`:
-
-   ```bash
-   sudo docker compose ps
-   ```
-
-## Автозапуск и backup
-
-После ручной проверки скопируйте systemd-файлы в `/etc/systemd/system/`, затем выполните:
+Проверка после первого запуска:
 
 ```bash
-sudo systemctl daemon-reload
-sudo systemctl enable --now iphone-monitor.service
-sudo systemctl enable --now iphone-monitor-backup.timer
+python -m iphone_monitor.doctor      # проверки сети, базы и настроек
+python -m iphone_monitor.healthcheck # код 0, если heartbeat свежий
 ```
 
-Проверка:
+## Вариант 2. Свой VPS с Docker
 
 ```bash
-sudo systemctl status iphone-monitor.service
-sudo systemctl list-timers iphone-monitor-backup.timer
-sudo docker compose -f /opt/iphone-monitor/docker-compose.yml ps
+git clone <repo> /opt/iphone-monitor && cd /opt/iphone-monitor
+cp .env.example .env      # заполнить секреты
+sudo docker compose up -d --build
+sudo docker compose logs -f
 ```
+
+`docker-compose.yml` монтирует `./data` в `/data`, включает healthcheck и
+перезапуск `unless-stopped`. Systemd-юниты из этой папки нужны только если
+хочется запускать без Docker.
+
+## Вариант 3. Windows (домашний ПК)
+
+`tasks/run-bot.ps1` держит процесс живым: запускает
+`.venv\Scripts\python.exe -m iphone_monitor.main`, ждёт 15 секунд после
+падения и пишет вывод в `data\launcher-*.log`. Один экземпляр защищён файлом
+`data/bot.lock`. Telegram дома работает только через MTProto-прокси:
+`TELEGRAM_TRANSPORT=mtproto`, `TELEGRAM_PROXY=127.0.0.1:1443:<secret>`.
+
+## Резервные копии
+
+Бот сам делает копию базы раз в сутки после 03:00 по Астрахани в
+`data/backups/seen-*.sqlite3` и хранит 7 последних снимков. Дополнительный
+таймер не нужен; `deploy/iphone-monitor-backup.timer` оставлен для установок
+без бота-планировщика.
 
 ## Откат
 
-Если новый запуск работает неправильно, остановите контейнер:
-
 ```bash
-cd /opt/iphone-monitor
 sudo docker compose down
+git checkout <предыдущий-коммит>
+sudo docker compose up -d --build
 ```
 
-Затем вернитесь к предыдущему проверенному Git-коммиту, снова выполните `sudo docker compose up -d --build` и проверьте `docker compose ps`.
+На Amvera достаточно выбрать предыдущую сборку в разделе «Контроль версий».

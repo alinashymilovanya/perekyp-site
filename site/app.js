@@ -25,7 +25,7 @@ export function sortListings(listings) {
 
 export function dashboardDataFromStatic(payload) {
   return {
-    status: { ...(payload.status ?? {}), static_mode: true },
+    status: { ...(payload.status ?? {}), static_mode: payload.status?.live !== true },
     listings: payload.items ?? [],
   };
 }

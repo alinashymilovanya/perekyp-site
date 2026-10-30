@@ -39,8 +39,29 @@ def _storage(title: str) -> int | None:
     return value * 1024 if match.group(2).lower() in {"тб", "tb"} else value
 
 
+_CANONICAL_MODEL_WORDS = {
+    "iphone": "iPhone",
+    "pro": "Pro",
+    "max": "Max",
+    "plus": "Plus",
+    "mini": "mini",
+    "air": "Air",
+    "se": "SE",
+    "ultra": "Ultra",
+}
+
+
+def normalize_model(title: str) -> str:
+    """Fold 'Apple iPhone 16 PRO  max' and 'iPhone 16 Pro Max' into one key."""
+    head = title.split(",", 1)[0]
+    cleaned = re.sub(r"(apple|смартфон|телефон|новый|новый телефон)", " ", head, flags=re.IGNORECASE)
+    cleaned = re.sub(r"[^0-9A-Za-zА-Яа-яЁё+ ]+", " ", cleaned)
+    words = [word for word in cleaned.split() if word]
+    return " ".join(_CANONICAL_MODEL_WORDS.get(word.lower(), word) for word in words)
+
+
 def _model(title: str) -> str:
-    return title.split(",", 1)[0].strip()
+    return normalize_model(title)
 
 
 def _price(text: str) -> int:

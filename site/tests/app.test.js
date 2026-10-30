@@ -31,3 +31,13 @@ test("marks the InfinityFree fallback as a static demo mode", () => {
   assert.equal(dashboard.status.static_mode, true);
   assert.deepEqual(dashboard.listings, []);
 });
+
+test("treats a published live snapshot as real data", () => {
+  const dashboard = dashboardDataFromStatic({
+    status: { healthy: true, live: true, monitoring_enabled: true },
+    items: [],
+  });
+
+  assert.equal(dashboard.status.static_mode, false);
+  assert.equal(dashboard.status.healthy, true);
+});

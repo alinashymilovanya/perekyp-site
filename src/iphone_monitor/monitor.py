@@ -1,10 +1,30 @@
 """One polling cycle: deduplicate, analyze and notify new listings."""
 
 from datetime import datetime, timezone
+from typing import Sequence
 
 from .analysis import analyze_listing
 from .avito_parser import ParsedListing
 from .formatter import ListingView, format_listing_message
+from .telegram_api import TelegramApiError
+from .telemetry import log_event
+
+
+def _send_photo(telegram, chat_id: str, photo: str, caption: str) -> bool:
+    """Send the picture; a broken image link must not lose the listing."""
+    try:
+        telegram.send_photo(chat_id, photo, caption)
+        return True
+    except TelegramApiError:
+        return False
+
+
+def _send_text(telegram, chat_id: str, text: str) -> bool:
+    try:
+        telegram.send_message(chat_id, text)
+        return True
+    except TelegramApiError:
+        return False
 
 
 class Monitor:
@@ -13,22 +33,28 @@ class Monitor:
         source,
         store,
         telegram,
-        chat_id: str,
+        chat_ids: str | Sequence[str],
         *,
         delivery_rub: int = 400,
         commission_rub: int = 0,
         minimum_margin_rub: int = 500,
+        notify_min_margin_rub: int = 0,
+        repair_reserve_used_rub: int = 1_500,
+        repair_reserve_broken_rub: int = 10_000,
     ):
         self.source = source
         self.store = store
         self.telegram = telegram
-        self.chat_id = chat_id
+        self.chat_ids = (chat_ids,) if isinstance(chat_ids, str) else tuple(chat_ids)
         self.delivery_rub = delivery_rub
         self.commission_rub = commission_rub
         self.minimum_margin_rub = minimum_margin_rub
+        self.notify_min_margin_rub = notify_min_margin_rub
+        self.repair_reserve_used_rub = repair_reserve_used_rub
+        self.repair_reserve_broken_rub = repair_reserve_broken_rub
 
     @staticmethod
-    def _comparable_prices(listing: ParsedListing, listings: tuple[ParsedListing, ...]) -> list[int]:
+    def _batch_prices(listing: ParsedListing, listings: tuple[ParsedListing, ...]) -> list[int]:
         return [
             other.price_rub
             for other in listings
@@ -38,11 +64,38 @@ class Monitor:
             and other.condition == listing.condition
         ]
 
+    def _comparable_prices(
+        self, listing: ParsedListing, listings: tuple[ParsedListing, ...]
+    ) -> list[int]:
+        """Prefer the price history; fall back to the current page when it is thin."""
+        history = self.store.comparable_prices(
+            listing.model,
+            listing.storage_gb,
+            listing.condition,
+            exclude_item_id=listing.item_id,
+        )
+        if len(history) >= 3:
+            return list(history)
+        return sorted({*history, *self._batch_prices(listing, listings)})
+
+    def _send(self, listing: ParsedListing, message: str) -> None:
+        photo = listing.images[0] if listing.images and len(message) <= 1_024 else None
+        for chat_id in self.chat_ids:
+            if photo and _send_photo(self.telegram, chat_id, photo, message):
+                continue
+            if _send_text(self.telegram, chat_id, message):
+                continue
+            # Telegram is unreachable: keep the notification for a later retry
+            # instead of losing the listing forever.
+            self.store.enqueue_notification(
+                chat_id, "photo" if photo else "message", message, photo
+            )
+
     def process_once(self) -> int:
         listings = tuple(self.source.fetch())
+        self.store.record_prices(listings)
         if self.store.is_empty():
-            for listing in listings:
-                self.store.mark_seen(listing.item_id)
+            self.store.mark_seen_many([listing.item_id for listing in listings])
             return 0
 
         sent = 0
@@ -55,7 +108,25 @@ class Monitor:
                 delivery_rub=self.delivery_rub,
                 commission_rub=self.commission_rub,
                 minimum_margin_rub=self.minimum_margin_rub,
+                repair_reserve_used_rub=self.repair_reserve_used_rub,
+                repair_reserve_broken_rub=self.repair_reserve_broken_rub,
             )
+            if analysis.margin_rub is None or analysis.margin_rub < self.notify_min_margin_rub:
+                self.store.mark_seen(listing.item_id)
+                continue
+            if (
+                analysis.market_price_rub
+                and listing.price_rub < analysis.market_price_rub * 0.5
+            ):
+                # A phone at half the market price is a scam, a parts lot or a typo.
+                self.store.mark_seen(listing.item_id)
+                log_event(
+                    "listing_suspicious_price",
+                    item_id=listing.item_id,
+                    price_rub=listing.price_rub,
+                    market_price_rub=analysis.market_price_rub,
+                )
+                continue
             view = ListingView(
                 title=listing.title,
                 price_rub=listing.price_rub,
@@ -71,10 +142,7 @@ class Monitor:
                 positives=analysis.positives,
                 negatives=analysis.negatives,
             )
-            message = format_listing_message(view)
-            if listing.images:
-                self.telegram.send_photo(self.chat_id, listing.images[0], message[:1000])
-            self.telegram.send_message(self.chat_id, message)
+            self._send(listing, format_listing_message(view))
             self.store.mark_seen(listing.item_id)
             self.store.record_notified(
                 item_id=listing.item_id,

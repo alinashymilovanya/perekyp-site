@@ -1,0 +1,8 @@
+# Конфигурация Amvera Cloud. Dockerfile лежит в корне проекта.
+# Постоянное хранилище монтируется в /data: там же живут база, журнал и сессия Telegram.
+build:
+  dockerfile: Dockerfile
+
+run:
+  persistenceMount: /data
+  command: python -m iphone_monitor.main

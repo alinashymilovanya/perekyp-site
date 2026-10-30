@@ -27,6 +27,27 @@ def backup_database(
     return destination_path
 
 
+def prune_backups(backup_directory: str | Path, keep: int = 7) -> list[Path]:
+    """Delete the oldest snapshots so the directory never grows without bound."""
+    if keep < 1:
+        raise ValueError("keep must be at least 1")
+    directory = Path(backup_directory)
+    if not directory.is_dir():
+        return []
+    snapshots = sorted(
+        (path for path in directory.glob("seen-*.sqlite3") if path.is_file()),
+        key=lambda path: (path.stat().st_mtime, path.name),
+    )
+    removed: list[Path] = []
+    for path in snapshots[:-keep]:
+        try:
+            path.unlink()
+        except OSError:
+            continue
+        removed.append(path)
+    return removed
+
+
 def main() -> int:
     database_path = os.environ.get("DATABASE_PATH", "data/seen.sqlite3")
     backup_directory = os.environ.get("BACKUP_DIRECTORY", "data/backups")
