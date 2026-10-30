@@ -4,8 +4,8 @@
     "live": true,
     "monitoring_enabled": true,
     "source_failure_count": 0,
-    "heartbeat_at": 1793382504.428822,
-    "heartbeat_iso": "2026-10-30T17:48:24.428822+00:00",
+    "heartbeat_at": 1793384305.5888221,
+    "heartbeat_iso": "2026-10-30T18:18:25.588822+00:00",
     "error": null
   },
   "items": [
