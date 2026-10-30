@@ -169,6 +169,10 @@ class SeenStore:
         ).fetchone()
         return int(row[0])
 
+    def count_seen(self) -> int:
+        row = self._connection.execute("SELECT COUNT(*) FROM seen_listings").fetchone()
+        return int(row[0])
+
     def record_prices(self, listings) -> None:
         """Remember the observed asking prices so market medians survive restarts."""
         rows = [
@@ -251,6 +255,10 @@ class SeenStore:
             "SELECT chat_id FROM subscribers ORDER BY added_at, chat_id"
         ).fetchall()
         return tuple(str(row[0]) for row in rows)
+
+    def count_subscribers(self) -> int:
+        row = self._connection.execute("SELECT COUNT(*) FROM subscribers").fetchone()
+        return int(row[0])
 
     def get_metadata(self, key: str) -> str | None:
         row = self._connection.execute(

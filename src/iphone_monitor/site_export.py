@@ -2,10 +2,38 @@
 
 import ftplib
 import json
+import socket
 from datetime import datetime, timezone
 from pathlib import Path
 
 HEARTBEAT_FRESH_SECONDS = 900
+
+
+def _metadata_json(store, key: str):
+    """Read one JSON metadata row; a missing or broken row must not break export."""
+    getter = getattr(store, "get_metadata", None)
+    if getter is None:
+        return None
+    try:
+        raw = getter(key)
+    except Exception:  # noqa: BLE001 - export must survive a broken store
+        return None
+    if not raw:
+        return None
+    try:
+        return json.loads(raw)
+    except (TypeError, json.JSONDecodeError):
+        return raw
+
+
+def _store_count(store, method: str) -> int:
+    function = getattr(store, method, None)
+    if function is None:
+        return 0
+    try:
+        return int(function())
+    except Exception:  # noqa: BLE001 - diagnostics are best-effort
+        return 0
 
 
 def build_site_data(
@@ -40,6 +68,16 @@ def build_site_data(
             "heartbeat_at": heartbeat_at,
             "heartbeat_iso": heartbeat_iso,
             "error": None if status else "Бот пока не передавал состояние",
+            "host": socket.gethostname(),
+            "diag": {
+                "last_cycle": _metadata_json(store, "last_cycle"),
+                "last_source_error": _metadata_json(store, "last_source_error"),
+                "seen_total": _store_count(store, "count_seen"),
+                "pending_notifications": _store_count(
+                    store, "count_pending_notifications"
+                ),
+                "subscribers": _store_count(store, "count_subscribers"),
+            },
         },
         "items": list(store.recent_notifications(limit)),
     }

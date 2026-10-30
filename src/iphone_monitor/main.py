@@ -1,6 +1,7 @@
 """Long-polling entry point for the Telegram bot."""
 
 import ftplib
+import json
 import sqlite3
 import time
 from datetime import datetime, timezone
@@ -281,6 +282,8 @@ def run() -> None:
                 retry_schedule.next_attempt_at = now + settings.poll_interval_seconds
                 sent_now = sent
                 log_event("monitoring_poll_succeeded", notified_count=sent)
+                if store.get_metadata("last_source_error"):
+                    store.set_metadata("last_source_error", "")
             except (AvitoApiError, BrowserActError, ListingsSourceError, ValueError) as exc:
                 retry_schedule.record_failure(now)
                 if getattr(exc, "rate_limited", False):
@@ -292,6 +295,18 @@ def run() -> None:
                     failure_count=retry_schedule.failure_count,
                     error_type=type(exc).__name__,
                     error=str(exc),
+                )
+                store.set_metadata(
+                    "last_source_error",
+                    json.dumps(
+                        {
+                            "at": datetime.now(timezone.utc).isoformat(),
+                            "error_type": type(exc).__name__,
+                            "error": str(exc),
+                            "rate_limited": bool(getattr(exc, "rate_limited", False)),
+                        },
+                        ensure_ascii=False,
+                    ),
                 )
                 if retry_schedule.needs_alert(now, settings.source_alert_after_seconds):
                     if getattr(exc, "blocked", False):

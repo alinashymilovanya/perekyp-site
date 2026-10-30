@@ -113,6 +113,31 @@ class SiteExportTests(unittest.TestCase):
         upload.assert_called_once()
         self.assertEqual(upload.call_args.kwargs["host"], "ftp.example.com")
 
+    def test_payload_carries_diagnostics_for_a_remote_deploy(self):
+        self._write_status(1_000.0)
+        self.store.add_subscriber("7219843760")
+        self.store.set_metadata(
+            "last_cycle",
+            json.dumps({"at": "2026-10-30T18:00:00+00:00", "fetched": 55, "notified": 2}),
+        )
+        self.store.set_metadata(
+            "last_source_error",
+            json.dumps({"error": "Avito вернул HTTP 429", "rate_limited": True}),
+        )
+        payload = build_site_data(self.store, status_path=self.status_path, now=1_100.0)
+        diag = payload["status"]["diag"]
+        self.assertEqual(diag["last_cycle"]["fetched"], 55)
+        self.assertTrue(diag["last_source_error"]["rate_limited"])
+        self.assertEqual(diag["subscribers"], 1)
+        self.assertEqual(diag["seen_total"], 0)
+        self.assertTrue(payload["status"]["host"])
+
+    def test_diagnostics_tolerate_a_minimal_store(self):
+        stub = SimpleNamespace(recent_notifications=lambda limit: ())
+        payload = build_site_data(stub, status_path=self.status_path, now=1_100.0)
+        self.assertIsNone(payload["status"]["diag"]["last_cycle"])
+        self.assertEqual(payload["status"]["diag"]["seen_total"], 0)
+
     def test_upload_rejects_a_missing_file(self):
         with self.assertRaises(FileNotFoundError):
             upload_site_data(

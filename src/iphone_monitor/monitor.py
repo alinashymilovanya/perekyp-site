@@ -1,5 +1,6 @@
 """One polling cycle: deduplicate, analyze and notify new listings."""
 
+import json
 from datetime import datetime, timedelta, timezone
 from typing import Sequence
 
@@ -194,5 +195,21 @@ class Monitor:
             skipped_low_margin=skipped_low_margin,
             notified=sent,
             best_margin_rub=best_margin,
+        )
+        # Keep the last cycle visible from outside the container: the site
+        # snapshot is the only channel we can read from a datacenter deploy.
+        self.store.set_metadata(
+            "last_cycle",
+            json.dumps(
+                {
+                    "at": datetime.now(timezone.utc).isoformat(),
+                    "fetched": len(listings),
+                    "new": fresh,
+                    "skipped_low_margin": skipped_low_margin,
+                    "notified": sent,
+                    "best_margin_rub": best_margin,
+                },
+                ensure_ascii=False,
+            ),
         )
         return sent
