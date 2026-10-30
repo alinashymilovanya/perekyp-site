@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VISHIT — кабинет</title>
+<style>
+:root{
+  --bg:#060607;--panel:#0b0b0e;--panel2:#0d0d11;--line:rgba(255,255,255,.09);--line2:rgba(255,255,255,.055);
+  --txt:#f2f2f4;--mut:#8b8b95;--mut2:#5a5a64;--red:#c41245;--deep:#7b042a;--ok:#9be0b8;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"DejaVu Sans Mono",monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--txt);font-family:"Inter","Segoe UI",system-ui,Arial,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:clip}
+body:after{content:"";position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.28;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E")}
+a{color:inherit;text-decoration:none}
+.app{display:flex;flex-direction:column;min-height:100vh}
+
+/* top bar */
+.top{display:flex;align-items:center;gap:34px;padding:16px 26px;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:30;
+  background:rgba(6,6,7,.85);backdrop-filter:blur(14px)}
+.brand{display:flex;align-items:center;gap:11px}
+.brand svg{width:26px;height:26px;display:block}
+.brand span{font-weight:800;letter-spacing:.26em;font-size:13px}
+.divider{width:1px;height:22px;background:var(--line)}
+.cab{font-family:var(--mono);font-size:8.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--mut2)}
+.tabs{display:flex;gap:26px;margin-left:6px}
+.tabs a{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut)}
+.tabs a.on{color:#fff;position:relative}
+.tabs a.on:after{content:"";position:absolute;left:0;right:0;bottom:-18px;height:1px;background:var(--red)}
+.top .right{margin-left:auto;display:flex;align-items:center;gap:18px}
+.live{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:8px;letter-spacing:.18em;color:var(--mut2)}
+.live s{width:5px;height:5px;border-radius:50%;background:var(--red);box-shadow:0 0 10px var(--red);text-decoration:none}
+.user{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:#d6d6de;padding:7px 11px;border:1px solid var(--line)}
+.user b{width:18px;height:18px;border-radius:50%;background:linear-gradient(140deg,#8a0b31,#3a0417);display:block}
+
+/* layout */
+.grid{display:grid;grid-template-columns:250px minmax(0,1fr) 300px;gap:0;flex:1;align-items:start}
+.col{padding:22px 22px 40px}
+.side-l{border-right:1px solid var(--line)}
+.side-r{border-left:1px solid var(--line);background:linear-gradient(180deg,rgba(123,4,42,.06),transparent 40%)}
+.mid{padding:22px 26px 40px}
+
+.h{display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:8px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--mut2);margin:0 0 14px}
+.h b{color:#c9c9d3;font-weight:400}
+
+/* filters */
+.fgroup{margin-bottom:24px}
+.fgroup .t{font-family:var(--mono);font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut2);margin-bottom:9px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:#bfbfca;padding:6px 9px;border:1px solid var(--line)}
+.chip.on{color:#fff;border-color:rgba(196,18,69,.55);background:rgba(123,4,42,.28)}
+.range{height:2px;background:rgba(255,255,255,.1);position:relative;margin:14px 0 8px}
+.range i{position:absolute;left:0;top:0;bottom:0;width:62%;background:linear-gradient(90deg,var(--deep),var(--red))}
+.range u{position:absolute;left:62%;top:50%;width:9px;height:9px;background:#fff;transform:translate(-50%,-50%);border-radius:50%}
+.fval{display:flex;justify-content:space-between;font-family:var(--mono);font-size:8.5px;color:var(--mut2)}
+.btns{display:flex;gap:8px;margin-top:22px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 14px;font-size:9px;letter-spacing:.16em;
+  text-transform:uppercase;font-weight:600;border-radius:2px;border:1px solid var(--line);color:#e7e7ee;background:transparent;cursor:pointer}
+.btn.p{color:#fff;background:linear-gradient(180deg,#900530,#660321);border-color:rgba(255,255,255,.18);box-shadow:0 12px 30px -14px rgba(196,18,69,.9)}
+.btn.full{width:100%}
+.btn.sm{padding:8px 11px;font-size:8px}
+
+/* kpi */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);margin-bottom:22px}
+.kpi{padding:16px 18px;border-right:1px solid var(--line2)}
+.kpi:last-child{border-right:0}
+.kpi .l{font-family:var(--mono);font-size:7.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut2)}
+.kpi .v{margin-top:9px;font-size:24px;font-weight:700;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.kpi .v small{font-size:11px;font-weight:400;color:var(--mut);letter-spacing:0;margin-left:3px}
+.kpi .d{margin-top:6px;font-family:var(--mono);font-size:8px;letter-spacing:.12em;color:var(--ok)}
+.kpi .d.warn{color:#ff6d8f}
+
+/* chart */
+.card{border:1px solid var(--line);background:var(--panel);margin-bottom:22px}
+.card .ch{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--line);
+  font-family:var(--mono);font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut2)}
+.card .ch b{color:#d8d8e0;font-weight:400}
+.spark{padding:16px 16px 10px}
+.spark svg{display:block;width:100%;height:auto}
+.spark .axis{display:flex;justify-content:space-between;font-family:var(--mono);font-size:7.5px;letter-spacing:.14em;color:var(--mut2);margin-top:8px}
+
+/* table */
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-family:var(--mono);font-size:7.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut2);font-weight:400;
+  text-align:left;padding:0 8px 10px;border-bottom:1px solid var(--line)}
+.tbl td{padding:13px 8px;border-bottom:1px solid var(--line2);font-size:12px;color:#c9c9d2;white-space:nowrap}
+.tbl tr:hover td{background:linear-gradient(90deg,rgba(123,4,42,.13),transparent 70%)}
+.tbl td.mod{color:#f0f0f4;font-weight:600}
+.tbl td.num{font-family:var(--mono);font-size:11.5px;font-variant-numeric:tabular-nums}
+.tbl td.mar{font-family:var(--mono);font-size:12.5px;color:#ff4a76;font-variant-numeric:tabular-nums}
+.tbl td.time{font-family:var(--mono);font-size:8.5px;color:var(--mut2)}
+.badge{font-family:var(--mono);font-size:7.5px;letter-spacing:.16em;text-transform:uppercase;padding:5px 8px;border:1px solid rgba(196,18,69,.4);color:#ff6d8f}
+.badge.work{border-color:rgba(255,255,255,.16);color:#b9b9c4}
+.badge.done{border-color:rgba(155,224,184,.35);color:var(--ok)}
+.badge.no{border-color:rgba(255,255,255,.1);color:var(--mut2)}
+.badge.del{border-color:rgba(255,255,255,.22);color:#e8e8ef}
+.badge.del.no{border-color:rgba(255,255,255,.07);color:var(--mut2)}
+.connect{display:flex;align-items:center;gap:14px;border:1px solid rgba(196,18,69,.4);border-left:2px solid var(--red);
+  background:linear-gradient(90deg,rgba(123,4,42,.28),rgba(11,11,14,.2) 65%);padding:12px 16px;margin-bottom:22px}
+.connect s{width:6px;height:6px;border-radius:50%;background:var(--red);box-shadow:0 0 12px var(--red);flex:0 0 auto;text-decoration:none}
+.connect .tx{display:flex;flex-direction:column;gap:3px;min-width:0}
+.connect b{font-size:12.5px;font-weight:600;color:#f0f0f4}
+.connect span{font-size:10.5px;color:var(--mut)}
+.connect .btn{margin-left:auto;flex:0 0 auto}
+.tfoot{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;font-family:var(--mono);font-size:8px;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--mut2)}
+.pages{display:flex;gap:6px}
+.pages a{padding:4px 8px;border:1px solid var(--line);color:#b9b9c4}
+.pages a.on{color:#fff;border-color:rgba(196,18,69,.5)}
+
+/* right rail */
+.status{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:9px;letter-spacing:.16em;color:var(--ok)}
+.status s{width:6px;height:6px;border-radius:50%;background:#3ddc84;box-shadow:0 0 12px #3ddc84;text-decoration:none}
+.rows{margin-top:2px}
+.rows div{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line2);font-size:11px;color:#b6b6c0}
+.rows b{font-family:var(--mono);font-size:11px;color:#ececf1;font-weight:400}
+.progress{margin-top:14px}
+.progress .bar{height:2px;background:rgba(255,255,255,.09);position:relative;margin-top:8px}
+.progress .bar i{position:absolute;left:0;top:0;bottom:0;width:64%;background:linear-gradient(90deg,var(--deep),var(--red))}
+.progress .lbl{display:flex;justify-content:space-between;font-family:var(--mono);font-size:8px;letter-spacing:.14em;color:var(--mut2)}
+.plan{margin-top:22px;border:1px solid rgba(196,18,69,.45);padding:16px;background:linear-gradient(180deg,rgba(123,4,42,.25),rgba(11,11,14,.4))}
+.plan .n{font-family:var(--mono);font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:#e0c3cc}
+.plan .price{margin:10px 0 2px;font-size:26px;font-weight:750;letter-spacing:-.03em}
+.plan .price small{font-size:10px;color:var(--mut);font-weight:400;letter-spacing:0}
+.plan .u{font-family:var(--mono);font-size:8px;letter-spacing:.12em;color:var(--mut2);margin-bottom:14px}
+.plan .btn{margin-top:2px}
+.quick{margin-top:26px;display:flex;flex-direction:column;gap:8px}
+
+.legal{display:flex;justify-content:space-between;gap:16px;padding:12px 26px;border-top:1px solid var(--line);
+  font-family:var(--mono);font-size:7.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut2);flex-wrap:wrap}
+
+@media(max-width:1180px){
+  .grid{grid-template-columns:1fr}
+  .side-l,.side-r{border:0;border-bottom:1px solid var(--line)}
+  .kpis{grid-template-columns:1fr 1fr}
+  .kpi:nth-child(2){border-right:0}
+  .tabs{display:none}
+}
+@media(max-width:720px){
+  .top{padding:12px 16px;gap:14px}
+  .col,.mid{padding:18px 16px 30px}
+  .kpis{grid-template-columns:1fr 1fr}
+  .tbl .hidem{display:none}
+  .tbl td,.tbl th{padding:11px 6px}
+  .legal{padding:12px 16px}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="top">
+    <a class="brand" href="index.html">
+      <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M5 7 H14 L26 41 H17 Z" fill="#f0f0f2"/><path d="M43 7 H34 L22 41 H31 Z" fill="#c41245"/></svg>
+      <span>VISHIT</span>
+    </a>
+    <div class="divider"></div>
+    <div class="cab">Кабинет</div>
+    <nav class="tabs">
+      <a class="on" href="#">Находки</a>
+      <a href="#">Сигналы</a>
+      <a href="#">Модели</a>
+      <a href="#">Настройки</a>
+    </nav>
+    <div class="right">
+      <div class="live"><s></s>Бот на связи</div>
+      <a class="user" href="https://t.me/Aalishhechka" target="_blank" rel="noopener"><b></b>@Aalishhechka</a>
+    </div>
+  </header>
+
+  <div class="grid">
+    <!-- filters -->
+    <aside class="col side-l">
+      <div class="h"><span>Фильтры</span><b>5</b></div>
+
+      <div class="fgroup">
+        <div class="t">Авито Доставка</div>
+        <div class="chips"><span class="chip on">Все</span><span class="chip">Есть</span><span class="chip">Нет</span></div>
+      </div>
+
+
+      <div class="fgroup">
+        <div class="t">Модель</div>
+        <div class="chips"><span class="chip on">Все</span><span class="chip">15 Pro</span><span class="chip">14 Pro</span><span class="chip">13</span></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="t">Память</div>
+        <div class="chips"><span class="chip on">128</span><span class="chip on">256</span><span class="chip">512</span></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="t">Маржа от</div>
+        <div class="range"><i></i><u></u></div>
+        <div class="fval"><span>0 ₽</span><span>5 000 ₽</span><span>15 000 ₽</span></div>
+      </div>
+
+      <div class="fgroup">
+        <div class="t">Период</div>
+        <div class="chips"><span class="chip">24 ч</span><span class="chip on">7 дней</span><span class="chip">30 дней</span></div>
+      </div>
+
+      <div class="btns">
+        <button class="btn p full">Показать</button>
+      </div>
+      <div class="btns">
+        <button class="btn full">Сбросить</button>
+      </div>
+    </aside>
+
+    <!-- main -->
+    <main class="mid">
+      <div class="h"><span>Находки · вся Россия · 7 дней</span><b>обновлено 00:41</b></div>
+
+      <div class="connect">
+        <s></s>
+        <div class="tx">
+          <b>Мониторинг в Telegram</b>
+          <span>Сигналы приходят в чат с ботом — подключение занимает минуту</span>
+        </div>
+        <a class="btn p sm" href="https://t.me/perekypibot" target="_blank" rel="noopener">Подключить в боте →</a>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi"><div class="l">Найдено</div><div class="v">214</div><div class="d">+38 за сутки</div></div>
+        <div class="kpi"><div class="l">Сигналов</div><div class="v">87</div><div class="d">+12 за сутки</div></div>
+        <div class="kpi"><div class="l">Средняя маржа</div><div class="v">6 800<small>₽</small></div><div class="d">+400 ₽ к прошлой</div></div>
+        <div class="kpi"><div class="l">Куплено</div><div class="v">12</div><div class="d warn">3 в работе</div></div>
+      </div>
+
+      <div class="card">
+        <div class="ch"><span>Маржа по дням</span><b>профит 81 600 ₽</b></div>
+        <div class="spark">
+          <svg viewBox="0 0 900 150" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#c41245" stop-opacity=".45"/>
+                <stop offset="100%" stop-color="#c41245" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <path d="M0 118 L128 96 L257 104 L385 72 L514 84 L642 52 L771 60 L900 28 L900 150 L0 150 Z" fill="url(#g1)"/>
+            <path d="M0 118 L128 96 L257 104 L385 72 L514 84 L642 52 L771 60 L900 28" fill="none" stroke="#ff4a76" stroke-width="1.6"/>
+            <g fill="rgba(255,255,255,.14)">
+              <rect x="0" y="0" width="900" height="1"/>
+              <rect x="0" y="50" width="900" height="1"/>
+              <rect x="0" y="100" width="900" height="1"/>
+            </g>
+          </svg>
+          <div class="axis"><span>25.10</span><span>27.10</span><span>29.10</span><span>31.10</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ch"><span>Все находки</span><b>показано 6 из 214</b></div>
+        <table class="tbl">
+          <thead><tr>
+            <th>Время</th><th>Модель</th><th>Цена</th><th class="hidem">Рынок</th><th>Маржа</th><th>Доставка</th><th>Статус</th><th class="hidem">Ссылка</th>
+          </tr></thead>
+          <tbody>
+            <tr><td class="time">00:38</td><td class="mod">iPhone 15 Pro 256</td><td class="num">62 000 ₽</td><td class="num hidem">78 500 ₽</td><td class="mar">+14 500 ₽</td><td><span class="badge del">Есть</span></td><td><span class="badge">Новый</span></td><td class="hidem"><a href="#" style="color:#ff6d8f;font-family:var(--mono);font-size:8px;letter-spacing:.14em">AVITO ↗</a></td></tr>
+            <tr><td class="time">00:24</td><td class="mod">iPhone 14 Pro 128</td><td class="num">41 500 ₽</td><td class="num hidem">52 000 ₽</td><td class="mar">+9 300 ₽</td><td><span class="badge del">Есть</span></td><td><span class="badge work">В работе</span></td><td class="hidem"><a href="#" style="color:#ff6d8f;font-family:var(--mono);font-size:8px;letter-spacing:.14em">AVITO ↗</a></td></tr>
+            <tr><td class="time">00:17</td><td class="mod">iPhone 13 128</td><td class="num">27 900 ₽</td><td class="num hidem">34 800 ₽</td><td class="mar">+6 100 ₽</td><td><span class="badge del no">Нет</span></td><td><span class="badge">Новый</span></td><td class="hidem"><a href="#" style="color:#ff6d8f;font-family:var(--mono);font-size:8px;letter-spacing:.14em">AVITO ↗</a></td></tr>
+            <tr><td class="time">23:52</td><td class="mod">iPhone 15 Pro Max 256</td><td class="num">74 500 ₽</td><td class="num hidem">86 000 ₽</td><td class="mar">+8 700 ₽</td><td><span class="badge del">Есть</span></td><td><span class="badge done">Куплено</span></td><td class="hidem"><a href="#" style="color:#ff6d8f;font-family:var(--mono);font-size:8px;letter-spacing:.14em">AVITO ↗</a></td></tr>
+            <tr><td class="time">23:31</td><td class="mod">iPhone 15 128</td><td class="num">48 000 ₽</td><td class="num hidem">55 400 ₽</td><td class="mar">+5 900 ₽</td><td><span class="badge del no">Нет</span></td><td><span class="badge no">Мимо</span></td><td class="hidem"><a href="#" style="color:#ff6d8f;font-family:var(--mono);font-size:8px;letter-spacing:.14em">AVITO ↗</a></td></tr>
+            <tr><td class="time">22:58</td><td class="mod">iPhone 12 64</td><td class="num">18 900 ₽</td><td class="num hidem">22 400 ₽</td><td class="mar">+2 100 ₽</td><td><span class="badge del">Есть</span></td><td><span class="badge no">Мимо</span></td><td class="hidem"><a href="#" style="color:#ff6d8f;font-family:var(--mono);font-size:8px;letter-spacing:.14em">AVITO ↗</a></td></tr>
+          </tbody>
+        </table>
+        <div class="tfoot"><span>Показано 6 из 214</span>
+          <div class="pages"><a class="on" href="#">1</a><a href="#">2</a><a href="#">3</a><a href="#">…</a><a href="#">36</a></div>
+        </div>
+      </div>
+    </main>
+
+    <!-- right rail -->
+    <aside class="col side-r">
+      <div class="h"><span>Бот</span><b>v1.4</b></div>
+      <div class="status"><s></s>Сканирует</div>
+      <div class="rows">
+        <div><span>Охват</span><b>Россия</b></div>
+        <div><span>Цикл</span><b>120 сек</b></div>
+        <div><span>Последний скан</span><b>12 сек назад</b></div>
+        <div><span>Объявлений за цикл</span><b>148</b></div>
+        <div><span>Отсеяно</span><b>121</b></div>
+      </div>
+      <div class="progress">
+        <div class="lbl"><span>SCAN 64%</span><span>148 / 232</span></div>
+        <div class="bar"><i></i></div>
+      </div>
+
+      <div class="plan">
+        <div class="n">Подписка Pro</div>
+        <div class="price">399 ₽ <small>/ месяц</small></div>
+        <div class="u">оплачено до 30.11.2026</div>
+        <a class="btn p full sm" href="https://t.me/perekypibot" target="_blank" rel="noopener">Открыть бота →</a>
+      </div>
+
+      <div class="quick">
+        <button class="btn sm full">Добавить модель</button>
+        <button class="btn sm full">Пауза на час</button>
+        <button class="btn sm full">История сигналов</button>
+      </div>
+
+      <div class="h" style="margin-top:26px"><span>Сегодня</span><b>37</b></div>
+      <div class="rows">
+        <div><span>Новых находок</span><b>37</b></div>
+        <div><span>Лучшая маржа</span><b>+14 500 ₽</b></div>
+        <div><span>Уведомлений</span><b>19</b></div>
+      </div>
+    </aside>
+  </div>
+
+  <footer class="legal">
+    <span>© VISHIT 2026</span>
+    <span>Источник данных — Avito</span>
+    <span>Кабинет · @Aalishhechka</span>
+  </footer>
+</div>
+</body>
+</html>

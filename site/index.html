@@ -1,106 +1,512 @@
 <!doctype html>
 <html lang="ru">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#0c1725">
-    <meta name="description" content="Локальный кабинет мониторинга iPhone-объявлений и расчёта потенциальной маржи.">
-    <title>iPhone Monitor — кабинет</title>
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="/styles.css">
-    <script type="module" src="/app.js"></script>
-  </head>
-  <body>
-    <div class="app-shell">
-      <aside class="sidebar" aria-label="Основная навигация">
-        <div class="brand">
-          <div class="brand-mark">IM</div>
-          <div><strong>iPhone</strong><span>Monitor</span></div>
-        </div>
-        <div class="workspace-label">Рабочее пространство</div>
-        <nav class="main-nav">
-          <button class="nav-item is-active" data-view="overview"><span class="nav-icon">◈</span>Обзор</button>
-          <button class="nav-item" data-view="listings"><span class="nav-icon">▤</span>Объявления</button>
-          <button class="nav-item" data-view="calculator"><span class="nav-icon">⊞</span>Калькулятор</button>
-        </nav>
-        <div class="sidebar-footer">
-          <div class="connection-line"><span class="status-dot" id="sidebar-dot"></span><span>Локальный режим</span></div>
-          <p>Данные читаются из папки бота. Секреты в браузер не передаются.</p>
-        </div>
-      </aside>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VISHIT — перекуп без ручного поиска</title>
+<style>
+:root{
+  --bg:#060607;--panel:#0b0b0e;--panel2:#0e0e12;--line:rgba(255,255,255,.09);--line2:rgba(255,255,255,.055);
+  --txt:#f2f2f4;--mut:#8b8b95;--mut2:#5a5a64;--red:#c41245;--deep:#7b042a;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"DejaVu Sans Mono",monospace;
+  --serif:Georgia,"Times New Roman",serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--txt);font-family:"Inter","Segoe UI",system-ui,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+body:after{content:"";position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.3;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E")}
+a{color:inherit}
+.wrap{max-width:1520px;margin:0 auto;padding:0 52px}
 
-      <main class="main-content">
-        <header class="topbar">
-          <div class="breadcrumb"><span>Кабинет</span><b>/</b><strong id="page-title">Обзор</strong></div>
-          <div class="topbar-actions">
-            <span class="last-updated" id="last-updated">Загрузка данных…</span>
-            <button class="refresh-button" id="refresh-button" aria-label="Обновить данные"><span>↻</span><em>Обновить</em></button>
-          </div>
-        </header>
+/* ---------- header ---------- */
+.hdr{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:38px;padding:20px 52px;
+  border-bottom:1px solid var(--line);background:rgba(6,6,7,.78);backdrop-filter:blur(16px)}
+.brand{display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--txt)}
+.brand .mark{width:30px;height:30px;display:block;flex:none}
+.brand .word{font-weight:800;letter-spacing:.26em;font-size:15px;padding-top:1px}
+nav{margin-left:auto;display:flex;gap:30px}
+nav a{color:var(--mut);text-decoration:none;font-size:10px;letter-spacing:.2em;text-transform:uppercase;transition:color .2s}
+nav a:hover{color:#fff}
+.live{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;color:var(--mut2)}
+.live s{width:5px;height:5px;border-radius:50%;background:var(--red);box-shadow:0 0 10px var(--red);text-decoration:none}
+.btn{display:inline-flex;align-items:center;gap:9px;padding:13px 20px;text-decoration:none;font-size:10px;letter-spacing:.16em;
+  text-transform:uppercase;font-weight:600;border-radius:2px;transition:.2s}
+.btn.p{color:#fff;background:linear-gradient(180deg,#900530,#660321);border:1px solid rgba(255,255,255,.18);box-shadow:0 14px 40px -16px rgba(196,18,69,.9)}
+.btn.p:hover{filter:brightness(1.18)}
+.btn.g{color:#e9e9ef;border:1px solid rgba(255,255,255,.18)}
+.btn.g:hover{border-color:rgba(255,255,255,.4)}
+.btn.sm{padding:9px 14px;font-size:9px;border:1px solid rgba(255,255,255,.2);color:#eaeaf0}
 
-        <div class="content-wrap">
-          <div class="load-error" id="load-error" role="alert" hidden></div>
+/* ---------- hero ---------- */
+.hero{position:relative;overflow:hidden;min-height:calc(100vh - 71px);display:grid;grid-template-columns:.86fr 1.14fr;
+  gap:48px;align-items:center;padding:56px 52px 64px}
+.hero .glow{position:absolute;left:66%;top:46%;width:64vw;height:64vw;transform:translate(-50%,-50%);border-radius:50%;z-index:0;
+  background:radial-gradient(circle,rgba(123,4,42,.4),rgba(123,4,42,0) 60%)}
+.hero .dots{position:absolute;inset:0;z-index:0;opacity:.45;
+  background-image:radial-gradient(rgba(255,255,255,.16) 1px,transparent 1px);background-size:22px 22px;
+  -webkit-mask-image:radial-gradient(circle at 70% 46%,#000,transparent 60%);mask-image:radial-gradient(circle at 70% 46%,#000,transparent 60%)}
+.hero>*{position:relative;z-index:2}
+.kicker{display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:#9c9ca6}
+.kicker s{display:block;width:14px;height:2px;background:var(--deep);text-decoration:none}
+h1{margin:18px 0 0;font-size:clamp(46px,5.2vw,80px);line-height:.9;letter-spacing:-.05em;font-weight:800;text-transform:uppercase}
+h1 em{font-style:normal;color:var(--red)}
+.lede{margin:24px 0 0;max-width:392px;font-size:13px;line-height:1.75;color:var(--mut)}
+.cta{display:flex;gap:10px;margin-top:30px;flex-wrap:wrap}
+.steps{margin-top:36px;border-top:1px solid var(--line);max-width:400px}
+.steps div{display:flex;align-items:center;gap:14px;padding:11px 0;border-bottom:1px solid var(--line2)}
+.steps b{font-family:var(--mono);font-size:8.5px;color:var(--red);font-weight:400;letter-spacing:.14em}
+.steps span{font-size:11px;color:#cfcfd7}
+.steps i{margin-left:auto;font-family:var(--mono);font-size:8px;color:var(--mut2);font-style:normal;letter-spacing:.14em}
 
-          <section class="page-view is-visible" id="view-overview" aria-labelledby="overview-title">
-            <div class="hero-heading">
-              <div>
-                <p class="eyebrow">Мониторинг iPhone <span class="eyebrow-line"></span></p>
-                <h1 id="overview-title">Покупки под контролем<span class="heading-dot">.</span></h1>
-                <p class="hero-copy">Собирайте выгодные находки, оценивайте маржу и принимайте решение до того, как объявление исчезнет.</p>
-              </div>
-              <div class="hero-note"><span class="note-icon">i</span><span>Сайт работает поверх<br>данных существующего бота</span></div>
-            </div>
+/* ---------- terminal ---------- */
+.term{border:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.012));
+  box-shadow:0 60px 100px -60px #000,inset 0 1px 0 rgba(255,255,255,.06);overflow:hidden}
+.tbar{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--line);background:rgba(0,0,0,.35)}
+.tbar s{width:7px;height:7px;border-radius:50%;background:#2a2a30;text-decoration:none}
+.tbar s:nth-child(1){background:#4a4a52}
+.tbar em{margin-left:10px;font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;color:var(--mut2);font-style:normal;text-transform:uppercase}
+.tbar b{margin-left:auto;font-family:var(--mono);font-size:8px;letter-spacing:.18em;color:#9be0b8;font-weight:400}
+.tbody{padding:16px 18px 18px;font-family:var(--mono);font-size:10.5px;line-height:1.95;color:#b9b9c4}
+.tbody .cmd{color:#fff}
+.tbody .cmd u{color:var(--red);text-decoration:none}
+.tbody .dim{color:#6a6a75}
+.tbody .ok{color:#dcdce4}
+.tbody .hl{color:var(--red)}
+.tbody .ln{display:block}
+.table{margin-top:16px;font-family:"Inter","Segoe UI",sans-serif}
+.th,.tr{display:grid;grid-template-columns:1.5fr .55fr .55fr .7fr .62fr;gap:10px;align-items:center;padding:9px 10px}
+.th{font-family:var(--mono);font-size:7.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut2);border-bottom:1px solid var(--line)}
+.tr{font-size:11px;border-bottom:1px solid var(--line2);color:#c9c9d2}
+.tr b{font-weight:600;color:#f0f0f4;font-variant-numeric:tabular-nums}
+.tr .m{color:#fff;font-weight:650;font-variant-numeric:tabular-nums;text-align:right}
+.tr .m.red{color:#ff4a76}
+.tr.act{background:linear-gradient(90deg,rgba(123,4,42,.3),transparent 78%);border-left:2px solid var(--red);padding-left:8px}
+.bar{display:flex;align-items:center;gap:10px;margin-top:14px;font-family:var(--mono);font-size:8px;letter-spacing:.14em;color:var(--mut2)}
+.bar .track{flex:1;height:2px;background:rgba(255,255,255,.08);position:relative;overflow:hidden}
+.bar .track i{position:absolute;left:0;top:0;bottom:0;width:64%;background:linear-gradient(90deg,var(--deep),var(--red))}
 
-            <div class="status-banner" id="status-banner">
-              <div class="status-symbol"><span class="status-dot" id="status-dot"></span></div>
-              <div class="status-copy"><strong id="status-badge">Проверяем</strong><span id="status-text">Получаем статус процесса…</span></div>
-              <div class="status-meta"><span>Последний сигнал</span><strong id="heartbeat-time">—</strong></div>
-            </div>
+/* ---------- strip ---------- */
+.strip{display:flex;align-items:center;gap:34px;padding:14px 52px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut2);flex-wrap:wrap}
+.strip b{color:#d8d8e0;font-weight:400}
+.strip .dot{width:3px;height:3px;background:#3a3a44;border-radius:50%}
 
-            <div class="stats-grid" aria-label="Ключевые показатели">
-              <article class="stat-card"><div class="stat-label"><span class="stat-icon blue">▤</span><span>Всего находок</span></div><strong class="stat-value" id="stat-listings">—</strong><span class="stat-caption">в истории бота</span></article>
-              <article class="stat-card"><div class="stat-label"><span class="stat-icon green">↗</span><span>Перспективных</span></div><strong class="stat-value" id="stat-promising">—</strong><span class="stat-caption">маржа от 500 ₽</span></article>
-              <article class="stat-card"><div class="stat-label"><span class="stat-icon amber">≈</span><span>Средняя маржа</span></div><strong class="stat-value" id="stat-average">—</strong><span class="stat-caption">по доступным расчётам</span></article>
-              <article class="stat-card"><div class="stat-label"><span class="stat-icon coral">★</span><span>Лучшая находка</span></div><strong class="stat-value" id="stat-best">—</strong><span class="stat-caption">максимальная маржа</span></article>
-            </div>
+/* ---------- sections ---------- */
+.sect{padding:96px 0 100px;border-bottom:1px solid var(--line2)}
+.sec-head{display:flex;align-items:flex-end;gap:28px;margin-bottom:44px}
+.sec-no{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:8.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--mut2);margin-bottom:14px}
+.sec-no s{width:10px;height:1px;background:var(--red);text-decoration:none}
+h2{margin:0;font-size:clamp(28px,3.2vw,46px);line-height:.96;letter-spacing:-.045em;font-weight:800;text-transform:uppercase}
+.sec-sub{max-width:330px;margin:0 0 4px auto;font-size:12px;line-height:1.7;color:var(--mut);text-align:left}
+.sec-link{margin:0 0 4px auto;font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#c9c9d3;text-decoration:none;white-space:nowrap}
+.sec-link:hover{color:var(--red)}
 
-            <div class="overview-grid">
-              <section class="panel system-panel">
-                <div class="panel-heading"><div><p class="eyebrow small">Контроль системы</p><h2>Состояние мониторинга</h2></div><span class="panel-kicker">LIVE</span></div>
-                <div class="system-list">
-                  <div class="system-row"><span class="system-name"><span class="mini-dot green-dot"></span>Процесс бота</span><strong class="value value-muted" id="source-state">—</strong></div>
-                  <div class="system-row"><span class="system-name"><span class="mini-dot blue-dot"></span>Ошибки источника</span><strong class="value" id="failure-count">—</strong></div>
-                  <div class="system-row"><span class="system-name"><span class="mini-dot amber-dot"></span>Хранилище данных</span><strong class="value value-success">SQLite</strong></div>
-                </div>
-                <div class="system-footnote"><span>●</span> Обновляется при каждом запросе</div>
-              </section>
-              <section class="panel quick-panel">
-                <div class="panel-heading"><div><p class="eyebrow small">Быстрый доступ</p><h2>Что сделать дальше</h2></div></div>
-                <button class="quick-action" data-view="listings"><span class="quick-number">01</span><span><strong>Посмотреть находки</strong><small>История уведомлений из бота</small></span><b>→</b></button>
-                <button class="quick-action" data-view="calculator"><span class="quick-number">02</span><span><strong>Посчитать сделку</strong><small>Проверить потенциальную маржу</small></span><b>→</b></button>
-              </section>
-            </div>
+/* ---------- finds ---------- */
+.finds .row{display:grid;grid-template-columns:1.2fr .9fr .9fr .85fr .8fr .72fr .62fr;gap:12px;align-items:center;padding:20px 4px;border-bottom:1px solid var(--line2)}
+.finds .deliv span{display:inline-block;font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;padding:5px 7px;border:1px solid rgba(255,255,255,.22);color:#e8e8ef}
+.finds .deliv span.no{border-color:rgba(255,255,255,.07);color:var(--mut2)}
+.dfilter{display:flex;align-items:center;gap:8px;margin:26px 0 26px;padding-top:18px;border-top:1px solid var(--line);flex-wrap:wrap}
+.dfilter .df-label{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut2);margin-right:6px}
+.dfilter .chip{font-family:var(--mono);font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;padding:6px 9px;border:1px solid var(--line);color:#b9b9c4}
+.dfilter .chip.on{color:#fff;border-color:rgba(196,18,69,.5);background:rgba(123,4,42,.25)}
+.dfilter .df-note{margin-left:auto;font-family:var(--mono);font-size:7.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut2)}
+.finds .row:first-child{border-top:1px solid var(--line)}
+.finds .hd{padding:0 4px 12px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:7.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut2)}
+.finds .row:not(.hd):hover{background:linear-gradient(90deg,rgba(123,4,42,.14),transparent 60%)}
+.finds .mod{display:flex;align-items:center;gap:12px}
+.finds .mod i{font-family:var(--mono);font-size:8px;color:var(--mut2);font-style:normal;letter-spacing:.12em}
+.finds .mod b{font-size:15px;font-weight:600;letter-spacing:-.01em}
+.finds .num{font-family:var(--mono);font-size:12.5px;font-variant-numeric:tabular-nums;color:#dcdce4}
+.finds .mar{font-family:var(--mono);font-size:14px;font-variant-numeric:tabular-nums;color:#ff4a76;letter-spacing:-.01em}
+.finds .verdict{font-family:var(--mono);font-size:8px;letter-spacing:.18em;text-transform:uppercase;padding:6px 9px;border:1px solid rgba(196,18,69,.4);color:#ff6d8f;display:inline-block;white-space:nowrap}
+.finds .verdict.no{border-color:rgba(255,255,255,.12);color:var(--mut2)}
+.finds .time{font-family:var(--mono);font-size:8.5px;color:var(--mut2);text-align:right}
+.finds .note{margin-top:18px;font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;color:var(--mut2);text-transform:uppercase}
 
-            <section class="panel recent-panel"><div class="panel-heading"><div><p class="eyebrow small">История</p><h2>Последние находки</h2></div><button class="text-button" data-view="listings">Все объявления <span>→</span></button></div><div id="preview-list" class="listing-list"></div></section>
-          </section>
+/* ---------- how ---------- */
+.how-grid{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line)}
+.how-grid article{padding:34px 34px 40px;border-right:1px solid var(--line2);position:relative}
+.how-grid article:last-child{border-right:0}
+.how-grid .n{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--red)}
+.how-grid h3{margin:16px 0 12px;font-size:20px;letter-spacing:-.02em;font-weight:650}
+.how-grid p{margin:0;font-size:12.5px;line-height:1.75;color:var(--mut);max-width:290px}
+.how-grid .tag{margin-top:26px;font-family:var(--mono);font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut2)}
 
-          <section class="page-view" id="view-listings" aria-labelledby="listings-title">
-            <div class="section-heading"><div><p class="eyebrow">История мониторинга</p><h1 id="listings-title">Все объявления<span class="heading-dot">.</span></h1><p>Уведомления, которые бот сохранил в локальной базе.</p></div></div>
-            <section class="panel listings-panel">
-              <div class="listing-toolbar"><label class="search-field"><span>⌕</span><input id="search-input" type="search" placeholder="Поиск по названию" aria-label="Поиск по названию"></label><label class="sort-field"><span>Сортировка</span><select id="sort-select"><option value="margin">По марже</option><option value="date">По дате</option></select></label><span class="listing-count" id="listing-count">—</span></div>
-              <div id="listings-container" class="listing-list"></div>
-            </section>
-          </section>
+/* ---------- calc ---------- */
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:start}
+.calc-card{border:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.03),transparent)}
+.calc-card .top{display:flex;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--line);
+  font-family:var(--mono);font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut2)}
+.calc-card .top b{color:#9be0b8;font-weight:400}
+.calc-line{display:flex;justify-content:space-between;gap:20px;padding:15px 20px;border-bottom:1px solid var(--line2);font-size:12.5px;color:#cfcfd8}
+.calc-line span:last-child{font-family:var(--mono);font-size:12.5px;font-variant-numeric:tabular-nums;color:#f0f0f4}
+.calc-line.minus span:last-child{color:#9a9aa5}
+.calc-total{display:flex;justify-content:space-between;align-items:center;padding:22px 20px;background:linear-gradient(90deg,rgba(123,4,42,.42),rgba(123,4,42,.05));
+  border-left:2px solid var(--red)}
+.calc-total span{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:#e6bcc7}
+.calc-total b{font-family:var(--mono);font-size:26px;letter-spacing:-.02em;color:#fff;font-weight:500}
+.calc-txt p{font-size:13px;line-height:1.85;color:var(--mut);margin:0 0 18px}
+.calc-txt p b{color:#eaeaef;font-weight:600}
+.calc-txt ul{margin:0;padding:0;list-style:none;border-top:1px solid var(--line2)}
+.calc-txt li{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid var(--line2);font-size:12px;color:#c2c2cc}
+.calc-txt li s{font-family:var(--mono);font-size:8px;color:var(--red);text-decoration:none;letter-spacing:.14em;padding-top:3px}
 
-          <section class="page-view" id="view-calculator" aria-labelledby="calculator-title">
-            <div class="section-heading"><div><p class="eyebrow">Инструмент решения</p><h1 id="calculator-title">Калькулятор сделки<span class="heading-dot">.</span></h1><p>Та же формула, которую бот использует для оценки потенциальной маржи.</p></div></div>
-            <div class="calculator-layout">
-              <section class="panel calculator-form"><div class="panel-heading"><div><p class="eyebrow small">Ввод данных</p><h2>Параметры объявления</h2></div></div><div class="form-grid"><label>Цена объявления<input id="calc-price" type="number" min="0" value="40000"><span>₽</span></label><label>Рыночная цена<input id="calc-market" type="number" min="0" value="50000"><span>₽</span></label><label>Доставка<input id="calc-delivery" type="number" min="0" value="400"><span>₽</span></label><label>Комиссия<input id="calc-commission" type="number" min="0" value="0"><span>₽</span></label><label>Резерв ремонта<input id="calc-reserve" type="number" min="0" value="1500"><span>₽</span></label></div><p class="formula-note">Маржа = рынок − цена − доставка − комиссия − резерв ремонта</p></section>
-              <section class="calculator-result-card"><p class="eyebrow small">Результат оценки</p><div id="calc-result" class="calculator-result">—</div><p id="calc-verdict" class="calc-verdict">—</p><div class="result-divider"></div><p class="result-hint">Порог перспективной сделки<br><strong>500 ₽</strong></p></section>
-            </div>
-          </section>
-        </div>
-      </main>
+/* ---------- pricing ---------- */
+.price-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;max-width:980px}
+.plan{border:1px solid var(--line);padding:30px 30px 34px;background:var(--panel);position:relative}
+.plan.pro{border-color:rgba(196,18,69,.5);background:linear-gradient(180deg,rgba(123,4,42,.22),rgba(11,11,14,.6) 55%,var(--panel))}
+.plan .name{font-family:var(--mono);font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--mut2)}
+.plan .cost{margin:16px 0 4px;font-size:40px;letter-spacing:-.04em;font-weight:750}
+.plan .cost small{font-size:12px;font-weight:400;color:var(--mut);letter-spacing:0}
+.plan ul{margin:24px 0 28px;padding:0;list-style:none}
+.plan li{padding:10px 0;border-top:1px solid var(--line2);font-size:12px;color:#c8c8d1;display:flex;gap:10px}
+.plan li:before{content:"—";color:var(--red);font-family:var(--mono)}
+.plan .btn{width:100%;justify-content:center}
+.price-note{margin-top:20px;font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut2)}
+
+/* ---------- faq ---------- */
+.faq-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:72px;align-items:start}
+.faq-list{border-top:1px solid var(--line)}
+details{border-bottom:1px solid var(--line2)}
+summary{display:flex;align-items:center;gap:20px;padding:20px 4px;cursor:pointer;list-style:none;font-size:15px;letter-spacing:-.01em;color:#ececf1}
+summary::-webkit-details-marker{display:none}
+summary:after{content:"+";margin-left:auto;font-family:var(--mono);font-size:15px;color:var(--red)}
+details[open] summary:after{content:"–"}
+details p{margin:0;padding:0 4px 24px;max-width:640px;font-size:12.5px;line-height:1.8;color:var(--mut)}
+
+/* ---------- cta ---------- */
+.big-cta{position:relative;overflow:hidden;padding:88px 52px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:60px;flex-wrap:wrap}
+.big-cta .glow{position:absolute;left:28%;top:70%;width:60vw;height:60vw;transform:translate(-50%,-50%);border-radius:50%;
+  background:radial-gradient(circle,rgba(123,4,42,.4),transparent 62%)}
+.big-cta>*{position:relative;z-index:2}
+.big-cta h2{font-size:clamp(30px,3.6vw,52px);max-width:900px}
+.big-cta h2 em{font-family:var(--serif);font-style:italic;font-weight:400;text-transform:none;color:#fff;letter-spacing:-.01em}
+.big-cta .side{margin-left:auto;display:flex;flex-direction:column;gap:14px;align-items:flex-start}
+.big-cta .mono{font-family:var(--mono);font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut2)}
+
+/* ---------- footer ---------- */
+.ftr{padding:56px 52px 26px;display:grid;grid-template-columns:1.4fr .7fr .7fr .7fr;gap:40px}
+.ftr .about{margin-top:16px;max-width:250px;font-size:11.5px;line-height:1.8;color:var(--mut2)}
+.ftr h4{margin:0 0 14px;font-family:var(--mono);font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut2);font-weight:400}
+.ftr ul{margin:0;padding:0;list-style:none}
+.ftr li{margin-bottom:10px}
+.ftr li a{font-size:11.5px;color:#b6b6c0;text-decoration:none}
+.ftr li a:hover{color:#fff}
+.ftr .legal{grid-column:1/-1;display:flex;justify-content:space-between;gap:20px;padding-top:22px;margin-top:14px;border-top:1px solid var(--line2);
+  font-family:var(--mono);font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut2);flex-wrap:wrap}
+
+/* ---------- responsive ---------- */
+@media(max-width:1080px){
+  .hero{grid-template-columns:1fr;gap:44px;padding:44px 28px 56px;min-height:0}
+  .hero>*{min-width:0}
+  .hdr{padding:16px 28px;gap:20px}
+  nav{display:none}
+  .wrap,.strip,.big-cta,.ftr{padding-left:28px;padding-right:28px}
+  .sect{padding:64px 0 68px}
+  .sec-head{flex-wrap:wrap;gap:14px}
+  .sec-sub,.sec-link{margin-left:0}
+  .finds .row{grid-template-columns:1.6fr 1fr 1fr .9fr;gap:10px;padding:16px 2px}
+  .finds .row .r-market,.finds .row .r-verdict,.finds .row .r-time{display:none}
+  .finds .hd{display:none}
+  .how-grid{grid-template-columns:1fr}
+  .how-grid article{border-right:0;border-bottom:1px solid var(--line2);padding:28px 0}
+  .calc-grid,.faq-grid,.price-grid{grid-template-columns:1fr;gap:36px}
+  .ftr{grid-template-columns:1fr 1fr}
+}
+@media(max-width:620px){
+  h1{font-size:44px}
+  .cta{flex-direction:column;align-items:stretch}
+  .cta .btn{justify-content:center}
+  .strip{gap:16px 20px;font-size:8px}
+  .big-cta{padding:56px 28px}
+  .big-cta .side{margin-left:0}
+  .finds .row{grid-template-columns:1.9fr .95fr .95fr .8fr;gap:8px}
+  .finds .mod b{font-size:12px;line-height:1.25;font-weight:600}
+  .finds .mod i{font-size:7px;margin-right:6px}
+  .finds .mar{font-size:12px}
+  .strip .dot{display:none}
+  .strip{gap:14px 22px;justify-content:flex-start}
+  .finds .mar{font-size:12px}
+  .term .tbody{font-size:9px}
+  .table .th,.table .tr{grid-template-columns:1.6fr .8fr .8fr .9fr;font-size:9.5px}
+  .table .th span:nth-child(4),.table .tr span:nth-child(4){display:none}
+  .steps i{display:none}
+  .finds .note,.price-note{letter-spacing:.1em;font-size:8px}
+  .ftr{grid-template-columns:1fr}
+}
+body{overflow-x:clip}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <a class="brand" href="#top">
+    <svg class="mark" viewBox="0 0 48 48" aria-hidden="true"><path d="M5 7 H14 L26 41 H17 Z" fill="#f0f0f2"/><path d="M43 7 H34 L22 41 H31 Z" fill="#c41245"/></svg>
+    <span class="word">VISHIT</span>
+  </a>
+  <nav>
+    <a href="#finds">Находки</a>
+    <a href="#how">Как это работает</a>
+    <a href="#calc">Расчёт</a>
+    <a href="#pricing">Тарифы</a>
+    <a href="#faq">Вопросы</a>
+  </nav>
+  <div class="live"><s></s>Live 24/7</div>
+  <a class="btn sm" href="cabinet.html">Кабинет →</a>
+</header>
+
+<main>
+<section class="hero" id="top">
+  <div class="glow"></div><div class="dots"></div>
+  <div>
+    <div class="kicker"><s></s>VISHIT / Автоматический перекуп</div>
+    <h1>Сканируем<br>пока вы<br><em>спите.</em></h1>
+    <p class="lede">Круглосуточный бот читает Авито, считает маржу по пяти параметрам и присылает в Telegram только те iPhone, где деньги остаются после доставки, комиссии и ремонта.</p>
+    <div class="cta"><a class="btn p" href="cabinet.html">Открыть кабинет</a><a class="btn g" href="#finds">Смотреть находки</a></div>
+    <div class="steps">
+      <div><b>01</b><span>Бот читает Авито</span><i>каждые 120 с</i></div>
+      <div><b>02</b><span>Считает маржу</span><i>5 параметров</i></div>
+      <div><b>03</b><span>Присылает в Telegram</span><i>готовый расчёт</i></div>
     </div>
-  </body>
+  </div>
+
+  <div class="term">
+    <div class="tbar"><s></s><s></s><s></s><em>vishit@scan — live</em><b>● ПОДКЛЮЧЕНО</b></div>
+    <div class="tbody">
+      <span class="ln cmd">$ <u>vishit</u> scan --region russia --every 120s</span>
+      <span class="ln dim">[00:00:12] avito · получено 148 объявлений</span>
+      <span class="ln dim">[00:00:31] отсеяно 121 · цена выше рынка</span>
+      <span class="ln ok">[00:00:44] сигнал · iPhone 15 Pro 256 · маржа <span class="hl">+14 500 ₽</span></span>
+      <span class="ln dim">[00:00:45] отправлено · @perekypibot</span>
+      <div class="table">
+        <div class="th"><span>Модель</span><span>Цена</span><span>Рынок</span><span>Статус</span><span>Маржа</span></div>
+        <div class="tr act"><span><b>15 Pro 256</b></span><span>62 000</span><span>78 500</span><span>новый сигнал</span><span class="m red">+14 500</span></div>
+        <div class="tr"><span>14 Pro 128</span><span>41 500</span><span>52 000</span><span>в работе</span><span class="m">+9 300</span></div>
+        <div class="tr"><span>13 128</span><span>27 900</span><span>34 800</span><span>в работе</span><span class="m">+6 100</span></div>
+        <div class="tr"><span>15 128</span><span>48 000</span><span>55 400</span><span>пропущено</span><span class="m">+5 900</span></div>
+      </div>
+      <div class="bar"><span>SCAN 64%</span><span class="track"><i></i></span><span>148 / 232</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="strip">
+  <span>Найдено сегодня <b>37</b></span><span class="dot"></span>
+  <span>Отсеяно <b>1 812</b></span><span class="dot"></span>
+  <span>Средняя маржа <b>7 400 ₽</b></span><span class="dot"></span>
+  <span>До уведомления <b>90 секунд</b></span><span class="dot"></span>
+  <span>Источник <b>Avito</b></span>
+</div>
+
+<section class="sect finds" id="finds">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <div class="sec-no"><s></s>02 / Находки</div>
+        <h2>Сегодняшний улов</h2>
+      </div>
+      <a class="sec-link" href="#">Все находки →</a>
+    </div>
+
+    <div class="dfilter">
+      <span class="df-label">Авито Доставка</span>
+      <span class="chip on">Все</span><span class="chip">Есть</span><span class="chip">Нет</span>
+      <span class="df-note">фильтр заработает после запуска</span>
+    </div>
+
+    <div class="row hd"><span class="r-mod">Модель</span><span class="r-price">Цена</span><span class="r-market">Рынок</span><span class="r-mar">Маржа</span><span class="r-deliv">Доставка</span><span class="r-verdict">Вердикт</span><span class="r-time" style="text-align:right">Найдено</span></div>
+    <div class="row"><span class="mod r-mod"><i>01</i><b>iPhone 15 Pro 256</b></span><span class="num r-price">62 000 ₽</span><span class="num r-market">78 500 ₽</span><span class="mar r-mar">+14 500 ₽</span><span class="deliv"><span>Есть</span></span><span class="r-verdict"><span class="verdict">Брать</span></span><span class="time r-time">2 мин назад</span></div>
+    <div class="row"><span class="mod r-mod"><i>02</i><b>iPhone 14 Pro 128</b></span><span class="num r-price">41 500 ₽</span><span class="num r-market">52 000 ₽</span><span class="mar r-mar">+9 300 ₽</span><span class="deliv"><span>Есть</span></span><span class="r-verdict"><span class="verdict">Брать</span></span><span class="time r-time">14 мин назад</span></div>
+    <div class="row"><span class="mod r-mod"><i>03</i><b>iPhone 13 128</b></span><span class="num r-price">27 900 ₽</span><span class="num r-market">34 800 ₽</span><span class="mar r-mar">+6 100 ₽</span><span class="deliv"><span class="no">Нет</span></span><span class="r-verdict"><span class="verdict">Брать</span></span><span class="time r-time">21 мин назад</span></div>
+    <div class="row"><span class="mod r-mod"><i>04</i><b>iPhone 15 Pro Max 256</b></span><span class="num r-price">74 500 ₽</span><span class="num r-market">86 000 ₽</span><span class="mar r-mar">+8 700 ₽</span><span class="deliv"><span>Есть</span></span><span class="r-verdict"><span class="verdict">Брать</span></span><span class="time r-time">33 мин назад</span></div>
+    <div class="row"><span class="mod r-mod"><i>05</i><b>iPhone 15 128</b></span><span class="num r-price">48 000 ₽</span><span class="num r-market">55 400 ₽</span><span class="mar r-mar">+5 900 ₽</span><span class="deliv"><span class="no">Нет</span></span><span class="r-verdict"><span class="verdict no">Мимо</span></span><span class="time r-time">38 мин назад</span></div>
+    <div class="row"><span class="mod r-mod"><i>06</i><b>iPhone 12 64</b></span><span class="num r-price">18 900 ₽</span><span class="num r-market">22 400 ₽</span><span class="mar r-mar">+2 100 ₽</span><span class="deliv"><span>Есть</span></span><span class="r-verdict"><span class="verdict no">Мимо</span></span><span class="time r-time">1 ч назад</span></div>
+
+    <div class="note">Поток обновляется каждые 2 минуты · вся Россия</div>
+  </div>
+</section>
+
+<section class="sect" id="how">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <div class="sec-no"><s></s>03 / Механика</div>
+        <h2>Три шага<br>без вас</h2>
+      </div>
+      <p class="sec-sub">Вы один раз выбираете модели и память. Дальше находить, считать и решать — работа бота.</p>
+    </div>
+
+    <div class="how-grid">
+      <article>
+        <div class="n">01</div>
+        <h3>Сканируем</h3>
+        <p>Обходим выдачу Авито по всей России каждые две минуты: новые объявления, снижения цены, снятые с продажи.</p>
+        <div class="tag">Avito · 148 объявлений / цикл</div>
+      </article>
+      <article>
+        <div class="n">02</div>
+        <h3>Считаем</h3>
+        <p>Из цены вычитаем доставку, комиссию площадки и резерв на ремонт. Сравниваем с рынком по этой же модели и памяти.</p>
+        <div class="tag">5 параметров · 1 формула</div>
+      </article>
+      <article>
+        <div class="n">03</div>
+        <h3>Присылаем</h3>
+        <p>Карточка в Telegram: цена, рынок, маржа, ссылка на объявление и вердикт. Одна кнопка — «беру».</p>
+        <div class="tag">90 секунд · @Aalishhechka</div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="sect" id="calc">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <div class="sec-no"><s></s>04 / Расчёт</div>
+        <h2>Маржа до звонка</h2>
+      </div>
+      <a class="sec-link" href="#pricing">Что входит в тариф →</a>
+    </div>
+
+    <div class="calc-grid">
+      <div class="calc-card">
+        <div class="top"><span>iPhone 15 Pro · 256 ГБ · Авито Доставка</span><b>Расчёт бота</b></div>
+        <div class="calc-line"><span>Рынок по этой модели</span><span>78 500 ₽</span></div>
+        <div class="calc-line minus"><span>Цена объявления</span><span>−62 000 ₽</span></div>
+        <div class="calc-line minus"><span>Доставка</span><span>−400 ₽</span></div>
+        <div class="calc-line minus"><span>Комиссия площадки</span><span>−0 ₽</span></div>
+        <div class="calc-line minus"><span>Резерв на ремонт</span><span>−1 500 ₽</span></div>
+        <div class="calc-total"><span>Маржа</span><b>+14 600 ₽</b></div>
+      </div>
+
+      <div class="calc-txt">
+        <p>Бот не показывает «примерно». Он считает <b>ту же маржу, которую вы получите</b> после всех расходов — и отсеивает лоты, где прибыль съедается ремонтом или доставкой.</p>
+        <p>Резерв на ремонт ставится автоматически: 3% от рынка, но не меньше 1 000 ₽. Если в объявлении указан дефект — сумма растёт, и маржа пересчитывается.</p>
+        <ul>
+          <li><s>01</s>Рынок — медиана по этой модели и памяти за 7 дней</li>
+          <li><s>02</s>Доставка — от продавца до вашего города</li>
+          <li><s>03</s>Комиссия — зависит от способа сделки</li>
+          <li><s>04</s>Ремонт — резерв 3% от рынка, минимум 1 000 ₽</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sect" id="pricing">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <div class="sec-no"><s></s>05 / Тарифы</div>
+        <h2>Подписка<br>на находки</h2>
+      </div>
+      <p class="sec-sub">Оплата в Telegram. Отмена — в один клик, без писем и звонков.</p>
+    </div>
+
+    <div class="price-grid">
+      <div class="plan">
+        <div class="name">Free</div>
+        <div class="cost">0 ₽ <small>/ навсегда</small></div>
+        <ul>
+          <li>3 сигнала в сутки</li>
+          <li>Задержка до 30 минут</li>
+          <li>Вся Россия</li>
+          <li>Без истории находок</li>
+        </ul>
+        <a class="btn g" href="cabinet.html">Открыть кабинет</a>
+      </div>
+      <div class="plan pro">
+        <div class="name">Pro · подписка</div>
+        <div class="cost">399 ₽ <small>/ месяц</small></div>
+        <ul>
+          <li>Без лимита сигналов</li>
+          <li>Уведомление за 90 секунд</li>
+          <li>Все модели iPhone, вся Россия</li>
+          <li>История находок и экспорт</li>
+        </ul>
+        <a class="btn p" href="cabinet.html">Подключить Pro</a>
+      </div>
+    </div>
+    <div class="price-note">Цены в рублях · оплата в Telegram</div>
+  </div>
+</section>
+
+<section class="sect" id="faq">
+  <div class="wrap">
+    <div class="faq-grid">
+      <div>
+        <div class="sec-no"><s></s>06 / Вопросы</div>
+        <h2>Коротко<br>о главном</h2>
+      </div>
+      <div class="faq-list">
+        <details open>
+          <summary>Откуда бот берёт объявления?</summary>
+          <p>Из открытой выдачи Авито по всей России. Никаких закрытых баз и «серых» каналов — только то, что видит любой покупатель, но проверенное каждые две минуты.</p>
+        </details>
+        <details>
+          <summary>Как считается рынок?</summary>
+          <p>Медиана цен на ту же модель и объём памяти за последние 7 дней, с поправкой на состояние и комплект.</p>
+        </details>
+        <details>
+          <summary>Что если объявление уже продано?</summary>
+          <p>Карточка приходит через 90 секунд после публикации — у вас есть время позвонить первым. Если лот ушёл, бот помечает его и ищет следующий.</p>
+        </details>
+        <details>
+          <summary>Можно ли отменить подписку?</summary>
+          <p>Да, в один клик в боте. Доступ остаётся до конца оплаченного месяца, возврат — по правилам сервиса.</p>
+        </details>
+        <details>
+          <summary>Где вы ищете?</summary>
+          <p>Везде, где есть Авито: от Калининграда до Владивостока. Город не выбирается заранее — бот смотрит всю страну и сам отсеивает то, что невыгодно везти.</p>
+        </details>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="big-cta">
+  <div class="glow"></div>
+  <h2>Ваш следующий iPhone<br>уже <em>найден.</em></h2>
+  <div class="side">
+    <a class="btn p" href="cabinet.html">Открыть кабинет — 7 дней free</a>
+    <div class="mono">без карты · отмена в один клик</div>
+  </div>
+</section>
+</main>
+
+<footer class="ftr">
+  <div>
+    <a class="brand" href="#top">
+      <svg class="mark" viewBox="0 0 48 48" aria-hidden="true"><path d="M5 7 H14 L26 41 H17 Z" fill="#f0f0f2"/><path d="M43 7 H34 L22 41 H31 Z" fill="#c41245"/></svg>
+      <span class="word">VISHIT</span>
+    </a>
+    <p class="about">Перекуп без ручного поиска. Бот читает Авито, считает маржу и присылает находки в Telegram.</p>
+  </div>
+  <div>
+    <h4>Сервис</h4>
+    <ul><li><a href="#finds">Находки</a></li><li><a href="#how">Как это работает</a></li><li><a href="#pricing">Тарифы</a></li><li><a href="#faq">Вопросы</a></li></ul>
+  </div>
+  <div>
+    <h4>Контакты</h4>
+    <ul><li><a href="https://t.me/perekypibot" target="_blank" rel="noopener">@perekypibot — бот</a></li><li><a href="https://t.me/Aalishhechka" target="_blank" rel="noopener">@Aalishhechka — связь</a></li><li><a href="#">Вся Россия</a></li><li><a href="#">Демо по запросу</a></li></ul>
+  </div>
+  <div>
+    <h4>Документы</h4>
+    <ul><li><a href="#">Политика данных</a></li><li><a href="#">Условия сервиса</a></li><li><a href="#">Оферта</a></li></ul>
+  </div>
+  <div class="legal"><span>© VISHIT 2026</span><span>Источник данных — Avito</span><span>Работаем по всей России</span></div>
+</footer>
+
+<script>
+if (location.hash === '#b') document.body.classList.add('logob');
+var q = new URLSearchParams(location.search);
+if (q.get('logo') === 'b') document.body.classList.add('logob');
+if (q.get('id')) {
+  var el = document.getElementById(q.get('id'));
+  if (el) setTimeout(function () { el.scrollIntoView({ block: 'start' }); }, 50);
+}
+</script>
+</body>
 </html>
