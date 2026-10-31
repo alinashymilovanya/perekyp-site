@@ -4,20 +4,20 @@
     "live": true,
     "monitoring_enabled": true,
     "source_failure_count": 0,
-    "heartbeat_at": 1793468977.8537974,
-    "heartbeat_iso": "2026-10-31T17:49:37.853797+00:00",
+    "heartbeat_at": 1793469096.5473108,
+    "heartbeat_iso": "2026-10-31T17:51:36.547311+00:00",
     "error": null,
-    "host": "run-pereekyp-884d79644-h4vlc",
+    "host": "run-pereekyp-5c6d98d4c7-lxv9h",
     "diag": {
       "last_cycle": {
-        "at": "2026-10-31T17:49:37.819203+00:00",
+        "at": "2026-10-31T17:51:36.478139+00:00",
         "fetched": 15,
-        "new": 15,
-        "skipped_low_margin": 9,
+        "new": 1,
+        "skipped_low_margin": 0,
         "skipped_after_detail": 0,
         "enriched": 0,
-        "notified": 5,
-        "best_margin_rub": 32100
+        "notified": 1,
+        "best_margin_rub": 2100
       },
       "last_source_error": null,
       "detail_probe": {
@@ -46,13 +46,22 @@
       },
       "detail_cooldown_until": "1793446898.7270823",
       "details_cached": 5,
-      "detail_requests": 45,
-      "seen_total": 633,
+      "detail_requests": 46,
+      "seen_total": 634,
       "pending_notifications": 0,
       "subscribers": 2
     }
   },
   "items": [
+    {
+      "item_id": "8515264394",
+      "notified_at": "2026-10-31T17:51:36.409574+00:00",
+      "title": "iPhone 16 Pro, 256 ГБ, SIM + eSIM",
+      "price_rub": 56000,
+      "market_price_rub": 60000,
+      "margin_rub": 2100,
+      "url": "https://www.avito.ru/moskva/telefony/iphone_16_pro_256_gb_sim_esim_8515264394"
+    },
     {
       "item_id": "8543840152",
       "notified_at": "2026-10-31T17:49:37.720223+00:00",
@@ -493,15 +502,6 @@
       "market_price_rub": 66000,
       "margin_rub": 4100,
       "url": "https://www.avito.ru/moskva/telefony/iphone_16_pro_128_gb_sim_esim_8422073158"
-    },
-    {
-      "item_id": "8423632465",
-      "notified_at": "2026-10-31T10:12:09.747939+00:00",
-      "title": "iPhone 11, 64 ГБ, SIM + eSIM",
-      "price_rub": 5000,
-      "market_price_rub": 9250,
-      "margin_rub": 2350,
-      "url": "https://www.avito.ru/moskva/telefony/iphone_11_64_gb_sim_esim_8423632465"
     }
   ]
 }
