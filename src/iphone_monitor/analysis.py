@@ -7,6 +7,17 @@ from statistics import median
 from .avito_parser import ParsedListing
 from .domain import Listing, calculate_margin
 
+_NEW_CONDITIONS = {"новый", "новое", "новый товар", "как новый", "новинка"}
+_BROKEN_CONDITIONS = {"битый", "битое", "на запчасти", "не работает", "донор"}
+_NEW_HINTS = re.compile(
+    r"не активир|неактивир|запечатан|в плёнке|в пленке|только из магазина|"
+    r"новый в упаковке|абсолютно новый|ни разу не использовал"
+)
+_BROKEN_HINTS = re.compile(r"на запчасти|не работает|не включается|донор|утоплен|утопл")
+_REPAIR_HINTS = re.compile(r"ремонт|менял|замен|вскрывал")
+_RESTORED_HINTS = re.compile(r"восстановлен|переклеен|переклеен|неоригинал|не оригинал|копия|реплика")
+_DAMAGE_HINTS = re.compile(r"трещ|разбит|скол|царапин|потёрт|потерт")
+
 
 @dataclass(frozen=True)
 class ListingAnalysis:
@@ -17,15 +28,37 @@ class ListingAnalysis:
     negatives: tuple[str, ...]
 
 
+def _condition_kind(condition: str | None, text: str) -> str:
+    """What the phone really is: 'new', 'broken' or 'used'.
+
+    The parameter block and the description disagree often enough — sellers
+    mark a sealed phone as "Б/у" and a donor phone as "Хорошее" — so the
+    description wins whenever it is explicit.
+    """
+    lowered = str(condition or "").strip().lower()
+    haystack = str(text or "").lower()
+    if lowered in _NEW_CONDITIONS:
+        return "new"
+    if lowered in _BROKEN_CONDITIONS:
+        return "broken"
+    if _NEW_HINTS.search(haystack):
+        return "new"
+    if _BROKEN_HINTS.search(haystack):
+        return "broken"
+    return "used"
+
+
 def _repair_reserve(
     condition: str | None,
     *,
     used_reserve_rub: int = 1_500,
     broken_reserve_rub: int = 10_000,
+    description: str = "",
 ) -> int:
-    if condition == "Новый":
+    kind = _condition_kind(condition, description)
+    if kind == "new":
         return 0
-    if condition == "Битый":
+    if kind == "broken":
         return broken_reserve_rub
     return used_reserve_rub
 
@@ -34,6 +67,7 @@ def _description_notes(listing: ParsedListing) -> tuple[list[str], list[str]]:
     positives: list[str] = []
     negatives: list[str] = []
     text = listing.description.lower()
+    kind = _condition_kind(listing.condition, text)
 
     if listing.condition:
         positives.append(f"Состояние: {listing.condition}")
@@ -44,14 +78,20 @@ def _description_notes(listing: ParsedListing) -> tuple[list[str], list[str]]:
             positives.append(f"Аккумулятор {listing.battery_percent}%")
         else:
             negatives.append(f"Аккумулятор {listing.battery_percent}%")
+    elif kind == "new":
+        positives.append("Новый: аккумулятор без износа")
     else:
         negatives.append("Аккумулятор не указан")
 
-    if re.search(r"ремонт|менял|замен", text):
+    if kind == "new" and listing.condition != "Новый":
+        positives.append("По описанию телефон новый")
+    if _REPAIR_HINTS.search(text):
         negatives.append("В описании упомянуты ремонт или замена деталей")
-    if re.search(r"трещ|разбит|скол", text):
-        negatives.append("В описании упомянуты трещины, разбитие или сколы")
-    if listing.condition == "Битый":
+    if _RESTORED_HINTS.search(text):
+        negatives.append("Похоже на восстановленный телефон или копию")
+    if _DAMAGE_HINTS.search(text):
+        negatives.append("В описании упомянуты трещины, царапины или сколы")
+    if kind == "broken":
         negatives.append("Нужна отдельная оценка ремонта")
     return positives, negatives
 
@@ -93,6 +133,7 @@ def analyze_listing(
         listing.condition,
         used_reserve_rub=repair_reserve_used_rub,
         broken_reserve_rub=repair_reserve_broken_rub,
+        description=listing.description,
     )
     positives, negatives = _description_notes(listing)
     margin = None

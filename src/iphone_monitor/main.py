@@ -18,7 +18,7 @@ from .daily import send_daily_summary_if_due
 from .github_publish import GitHubPublishError, publish_snapshot
 from .health import write_status
 from .instance_lock import InstanceLock
-from .item_detail import run_probe_once
+from .item_detail import DetailEnricher, ItemDetailError, run_probe_once
 from .json_api_source import ListingsSourceError
 from .monitor import Monitor, _send_photo, _send_text
 from .runtime import RetrySchedule
@@ -216,6 +216,19 @@ def run() -> None:
     if settings.telegram_chat_id:
         store.add_subscriber(settings.telegram_chat_id)
     apply_seed_state(store, settings)
+    enricher = None
+    if settings.detail_enabled:
+        enricher = DetailEnricher(
+            store,
+            max_per_cycle=settings.detail_max_per_cycle,
+            pause_seconds=settings.detail_pause_seconds,
+            cooldown_minutes=settings.detail_cooldown_minutes,
+        )
+        log_event(
+            "detail_enricher_ready",
+            max_per_cycle=settings.detail_max_per_cycle,
+            cached_details=store.count_item_details(),
+        )
     if isinstance(source, AvitoApiSource):
         try:
             warm_up_price_history(source, store)
@@ -226,7 +239,7 @@ def run() -> None:
             if probe_result is not None:
                 log_event("detail_probe_finished", ok=probe_result.get("ok"))
                 publish_site_data(store, settings, force=True)
-        except (AvitoApiError, OSError, sqlite3.Error) as exc:
+        except (AvitoApiError, ItemDetailError, OSError, sqlite3.Error) as exc:
             log_event("detail_probe_failed", error=str(exc))
     offset = None
     retry_schedule = RetrySchedule(
@@ -311,6 +324,7 @@ def run() -> None:
                     repair_reserve_used_rub=settings.repair_reserve_used_rub,
                     repair_reserve_broken_rub=settings.repair_reserve_broken_rub,
                     weak_deal_margin_rub=settings.weak_deal_margin_rub,
+                    enricher=enricher,
                 ).process_once()
                 retry_schedule.record_success(now)
                 retry_schedule.next_attempt_at = now + settings.poll_interval_seconds

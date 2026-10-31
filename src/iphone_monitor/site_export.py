@@ -6,6 +6,8 @@ import socket
 from datetime import datetime, timezone
 from pathlib import Path
 
+from .item_detail import COOLDOWN_METADATA_KEY, PROBE_METADATA_KEY
+
 HEARTBEAT_FRESH_SECONDS = 900
 
 
@@ -24,6 +26,17 @@ def _metadata_json(store, key: str):
         return json.loads(raw)
     except (TypeError, json.JSONDecodeError):
         return raw
+
+
+def _metadata_value(store, key: str):
+    """One raw metadata string; a store without metadata support is fine."""
+    getter = getattr(store, "get_metadata", None)
+    if getter is None:
+        return None
+    try:
+        return getter(key)
+    except Exception:  # noqa: BLE001 - diagnostics are best-effort
+        return None
 
 
 def _store_count(store, method: str) -> int:
@@ -72,7 +85,9 @@ def build_site_data(
             "diag": {
                 "last_cycle": _metadata_json(store, "last_cycle"),
                 "last_source_error": _metadata_json(store, "last_source_error"),
-                "detail_probe": _metadata_json(store, "detail_probe_v1"),
+                "detail_probe": _metadata_json(store, PROBE_METADATA_KEY),
+                "detail_cooldown_until": _metadata_value(store, COOLDOWN_METADATA_KEY),
+                "details_cached": _store_count(store, "count_item_details"),
                 "seen_total": _store_count(store, "count_seen"),
                 "pending_notifications": _store_count(
                     store, "count_pending_notifications"

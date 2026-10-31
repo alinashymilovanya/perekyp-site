@@ -30,6 +30,10 @@ class Settings:
     avito_api_query: str = ""
     avito_api_pages: int = 1
     avito_api_sort: str = "date"
+    detail_enabled: bool = True
+    detail_max_per_cycle: int = 4
+    detail_pause_seconds: float = 4.0
+    detail_cooldown_minutes: int = 15
     database_path: str = "data/seen.sqlite3"
     poll_interval_seconds: int = 60
     max_listings_per_poll: int = 50
@@ -120,6 +124,11 @@ def load_settings(path: str | Path = ".env") -> Settings:
         avito_api_query=values.get("AVITO_API_QUERY", ""),
         avito_api_pages=int(values.get("AVITO_API_PAGES", "1")),
         avito_api_sort=values.get("AVITO_API_SORT", "date"),
+        detail_enabled=values.get("DETAIL_ENABLED", "1").strip().lower()
+        not in {"0", "false", "no", "off"},
+        detail_max_per_cycle=int(values.get("DETAIL_MAX_PER_CYCLE", "4")),
+        detail_pause_seconds=float(values.get("DETAIL_PAUSE_SECONDS", "4")),
+        detail_cooldown_minutes=int(values.get("DETAIL_COOLDOWN_MINUTES", "15")),
         database_path=values.get("DATABASE_PATH", "data/seen.sqlite3"),
         poll_interval_seconds=int(values.get("POLL_INTERVAL_SECONDS", "60")),
         max_listings_per_poll=int(values.get("MAX_LISTINGS_PER_POLL", "50")),

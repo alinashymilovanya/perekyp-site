@@ -1,5 +1,6 @@
 """Small SQLite store for deduplicating listing notifications."""
 
+import json
 import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
@@ -46,6 +47,11 @@ class SeenStore:
             "id INTEGER PRIMARY KEY AUTOINCREMENT, chat_id TEXT NOT NULL, "
             "kind TEXT NOT NULL, text TEXT NOT NULL, photo TEXT, "
             "created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)"
+        )
+        self._connection.execute(
+            "CREATE TABLE IF NOT EXISTS item_details ("
+            "item_id TEXT PRIMARY KEY, fetched_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, "
+            "payload TEXT NOT NULL)"
         )
         self._ensure_column("notified_listings", "model", "TEXT")
         self._ensure_column("notified_listings", "storage_gb", "INTEGER")
@@ -213,6 +219,33 @@ class SeenStore:
             (model, storage_gb, condition, exclude_item_id, limit),
         ).fetchall()
         return tuple(int(row[0]) for row in rows)
+
+    def save_item_detail(self, detail) -> None:
+        """Cache the facts read from the listing page — pages cost requests."""
+        self._connection.execute(
+            "INSERT OR REPLACE INTO item_details(item_id, fetched_at, payload) "
+            "VALUES (?, CURRENT_TIMESTAMP, ?)",
+            (detail.item_id, json.dumps(detail.as_payload(), ensure_ascii=False)),
+        )
+        self._connection.commit()
+
+    def load_item_detail(self, item_id: str):
+        """Return the cached ItemDetail for a listing, or None."""
+        from .item_detail import ItemDetail
+
+        row = self._connection.execute(
+            "SELECT payload FROM item_details WHERE item_id = ?", (str(item_id),)
+        ).fetchone()
+        if row is None:
+            return None
+        try:
+            return ItemDetail.from_payload(json.loads(row[0]))
+        except (ValueError, TypeError, KeyError, IndexError):
+            return None
+
+    def count_item_details(self) -> int:
+        row = self._connection.execute("SELECT COUNT(*) FROM item_details").fetchone()
+        return int(row[0])
 
     def enqueue_notification(self, chat_id: str, kind: str, text: str, photo: str | None = None) -> None:
         """Park a notification in the outbox until Telegram is reachable again."""

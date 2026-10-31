@@ -44,6 +44,7 @@ class Monitor:
         repair_reserve_broken_rub: int = 10_000,
         duplicate_window_hours: int = 24,
         weak_deal_margin_rub: int = 1_500,
+        enricher=None,
     ):
         self.source = source
         self.store = store
@@ -57,6 +58,9 @@ class Monitor:
         self.repair_reserve_broken_rub = repair_reserve_broken_rub
         self.duplicate_window_hours = duplicate_window_hours
         self.weak_deal_margin_rub = weak_deal_margin_rub
+        # Reads the listing page for condition, battery and description.
+        # Only promising listings are read: each page costs one request.
+        self.enricher = enricher
 
     @staticmethod
     def _batch_prices(listing: ParsedListing, listings: tuple[ParsedListing, ...]) -> list[int]:
@@ -83,6 +87,27 @@ class Monitor:
             return list(history)
         return sorted({*history, *self._batch_prices(listing, listings)})
 
+    def _analyze(self, listing: ParsedListing, prices: Sequence[int]):
+        return analyze_listing(
+            listing,
+            list(prices),
+            delivery_rub=self.delivery_rub,
+            commission_rub=self.commission_rub,
+            minimum_margin_rub=self.minimum_margin_rub,
+            repair_reserve_used_rub=self.repair_reserve_used_rub,
+            repair_reserve_broken_rub=self.repair_reserve_broken_rub,
+        )
+
+    def _enrich(self, listing: ParsedListing) -> ParsedListing:
+        """Ask the listing page for the facts the search feed does not carry."""
+        if self.enricher is None:
+            return listing
+        try:
+            return self.enricher(listing)
+        except Exception as error:  # a page must never kill the polling cycle
+            log_event("detail_enrich_failed", item_id=listing.item_id, error=str(error))
+            return listing
+
     def _send(self, listing: ParsedListing, message: str) -> None:
         photo = listing.images[0] if listing.images and len(message) <= 1_024 else None
         for chat_id in self.chat_ids:
@@ -106,27 +131,45 @@ class Monitor:
         sent = 0
         fresh = 0
         skipped_low_margin = 0
+        skipped_after_detail = 0
+        enriched_count = 0
         best_margin = None
+        start_cycle = getattr(self.enricher, "start_cycle", None)
+        if callable(start_cycle):
+            start_cycle()
         for listing in listings:
             if self.store.has_seen(listing.item_id):
                 continue
             fresh += 1
-            analysis = analyze_listing(
-                listing,
-                self._comparable_prices(listing, listings),
-                delivery_rub=self.delivery_rub,
-                commission_rub=self.commission_rub,
-                minimum_margin_rub=self.minimum_margin_rub,
-                repair_reserve_used_rub=self.repair_reserve_used_rub,
-                repair_reserve_broken_rub=self.repair_reserve_broken_rub,
-            )
-            if analysis.margin_rub is not None:
-                if best_margin is None or analysis.margin_rub > best_margin:
-                    best_margin = analysis.margin_rub
+            prices = self._comparable_prices(listing, listings)
+            analysis = self._analyze(listing, prices)
             if analysis.margin_rub is None or analysis.margin_rub < self.notify_min_margin_rub:
                 skipped_low_margin += 1
                 self.store.mark_seen(listing.item_id)
                 continue
+            enriched = self._enrich(listing)
+            if enriched is not listing:
+                enriched_count += 1
+                listing = enriched
+                # The page corrects the condition, not the market: keep the
+                # comparable prices collected for it before the request.
+                analysis = self._analyze(listing, prices)
+                if (
+                    analysis.margin_rub is None
+                    or analysis.margin_rub < self.notify_min_margin_rub
+                ):
+                    skipped_after_detail += 1
+                    self.store.mark_seen(listing.item_id)
+                    log_event(
+                        "listing_dropped_after_detail",
+                        item_id=listing.item_id,
+                        condition=listing.condition,
+                        margin_rub=analysis.margin_rub,
+                    )
+                    continue
+            if analysis.margin_rub is not None:
+                if best_margin is None or analysis.margin_rub > best_margin:
+                    best_margin = analysis.margin_rub
             duplicate_cutoff = (
                 datetime.now(timezone.utc) - timedelta(hours=self.duplicate_window_hours)
             ).isoformat()
@@ -158,6 +201,14 @@ class Monitor:
                     market_price_rub=analysis.market_price_rub,
                 )
                 continue
+            detail_for = getattr(self.enricher, "detail_for", None)
+            detail = detail_for(listing.item_id) if callable(detail_for) else None
+            extras = []
+            if detail is not None:
+                if detail.color:
+                    extras.append(f"Цвет: {detail.color}")
+                if detail.sim:
+                    extras.append(f"SIM: {detail.sim}")
             view = ListingView(
                 title=listing.title,
                 price_rub=listing.price_rub,
@@ -173,6 +224,11 @@ class Monitor:
                 positives=analysis.positives,
                 negatives=analysis.negatives,
                 weak_threshold_rub=self.weak_deal_margin_rub,
+                description=listing.description if detail is not None else "",
+                location=listing.location,
+                seller=detail.seller_name if detail is not None else "",
+                published_at=detail.published_at if detail is not None else "",
+                extras=tuple(extras),
             )
             self._send(listing, format_listing_message(view))
             self.store.mark_seen(listing.item_id)
@@ -193,6 +249,8 @@ class Monitor:
             fetched=len(listings),
             new=fresh,
             skipped_low_margin=skipped_low_margin,
+            skipped_after_detail=skipped_after_detail,
+            enriched=enriched_count,
             notified=sent,
             best_margin_rub=best_margin,
         )
@@ -206,6 +264,8 @@ class Monitor:
                     "fetched": len(listings),
                     "new": fresh,
                     "skipped_low_margin": skipped_low_margin,
+                    "skipped_after_detail": skipped_after_detail,
+                    "enriched": enriched_count,
                     "notified": sent,
                     "best_margin_rub": best_margin,
                 },
