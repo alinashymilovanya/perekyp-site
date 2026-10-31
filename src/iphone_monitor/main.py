@@ -231,16 +231,20 @@ def run() -> None:
         )
     if isinstance(source, AvitoApiSource):
         try:
-            warm_up_price_history(source, store)
-        except (OSError, sqlite3.Error) as exc:
-            log_event("price_warmup_failed", error=str(exc))
-        try:
             probe_result = run_probe_once(store, source)
             if probe_result is not None:
-                log_event("detail_probe_finished", ok=probe_result.get("ok"))
+                log_event(
+                    "detail_probe_finished",
+                    ok=probe_result.get("ok"),
+                    cold_ok=not (probe_result.get("cold") or {}).get("error"),
+                )
                 publish_site_data(store, settings, force=True)
         except (AvitoApiError, ItemDetailError, OSError, sqlite3.Error) as exc:
             log_event("detail_probe_failed", error=str(exc))
+        try:
+            warm_up_price_history(source, store)
+        except (OSError, sqlite3.Error) as exc:
+            log_event("price_warmup_failed", error=str(exc))
     offset = None
     retry_schedule = RetrySchedule(
         base_delay_seconds=settings.source_retry_base_seconds,

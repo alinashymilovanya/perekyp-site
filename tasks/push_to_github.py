@@ -4,6 +4,7 @@ import base64
 import json
 import os
 import sys
+import time
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -94,6 +95,18 @@ def main() -> int:
     if not token or "/" not in repo:
         raise SystemExit("GITHUB_TOKEN and GITHUB_REPO are required")
 
+    for attempt in range(1, 5):
+        try:
+            return push_once(token, repo, branch, message)
+        except SystemExit as exc:
+            if "is not a fast forward" not in str(exc) or attempt == 4:
+                raise
+            print(f"branch moved while pushing, retry {attempt}/4")
+            time.sleep(2 * attempt)
+    return 1
+
+
+def push_once(token: str, repo: str, branch: str, message: str) -> int:
     head = call("GET", f"{API}/repos/{repo}/git/ref/heads/{branch}", token)["object"]["sha"]
     commit = call("GET", f"{API}/repos/{repo}/git/commits/{head}", token)
     base_tree = commit["tree"]["sha"]

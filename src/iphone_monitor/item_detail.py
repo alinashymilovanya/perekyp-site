@@ -21,7 +21,8 @@ from .telemetry import log_event
 
 APP_USER_AGENT = "Avito/121.0 (Android 13; Pixel 6)"
 _INITIAL_DATA_MARKER = "window.__initialData__ = "
-PROBE_METADATA_KEY = "detail_probe_v2"
+PROBE_METADATA_KEY = "detail_probe_v3"
+SAMPLE_ITEM_URL = "https://m.avito.ru/moskva/telefony/iphone_17_pro_512_gb_sim_esim_8372561555"
 COOLDOWN_METADATA_KEY = "detail_cooldown_until"
 PROBE_PAUSE_SECONDS = 8.0
 DEFAULT_TIMEOUT_SECONDS = 25.0
@@ -466,16 +467,48 @@ def probe(listing: ParsedListing, *, fetch: Callable[[str], str] = fetch_page) -
     return {"item_id": listing.item_id, "ok": winner, "attempts": attempts}
 
 
+def _cold_attempt(fetch: Callable[[str], str]) -> dict:
+    """Fetch one fixed page before any feed traffic: shows whether the IP may read HTML."""
+    attempt = {"name": "cold_html", "url": SAMPLE_ITEM_URL}
+    try:
+        html = fetch(SAMPLE_ITEM_URL)
+    except ItemDetailError as error:
+        attempt["error"] = str(error)[:300]
+        attempt["rate_limited"] = error.rate_limited
+    except Exception as error:  # noqa: BLE001 - the probe only reports
+        attempt["error"] = f"{type(error).__name__}: {error}"[:300]
+    else:
+        attempt["length"] = len(html)
+        attempt["has_initial_data"] = _INITIAL_DATA_MARKER in html
+        attempt["blocked"] = any(marker in html for marker in _BLOCK_MARKERS)
+        try:
+            detail = parse_item_page(html, "sample")
+        except ItemDetailError as error:
+            attempt["parse_error"] = str(error)[:300]
+        else:
+            attempt["condition"] = detail.condition
+            attempt["description_chars"] = len(detail.description)
+    return attempt
+
+
 def run_probe_once(store, source, *, fetch: Callable[[str], str] = fetch_page) -> dict | None:
-    """Probe the first listing once and park the answer for the site snapshot."""
+    """Probe one fixed page and the first listing once, then park the answer.
+
+    The cold attempt runs before the feed is touched, so a block code there
+    proves the egress IP itself is refused and not a reaction to burst traffic.
+    """
     if store.get_metadata(PROBE_METADATA_KEY):
         return None
+    cold = _cold_attempt(fetch)
     try:
         listings = source.fetch()
     except Exception:  # the probe must never break the start of the bot
-        return None
+        listings = []
     if not listings:
-        return None
+        result = {"cold": cold, "item_id": None, "ok": None, "attempts": []}
+        store.set_metadata(PROBE_METADATA_KEY, json.dumps(result, ensure_ascii=False))
+        return result
     result = probe(listings[0], fetch=fetch)
+    result["cold"] = cold
     store.set_metadata(PROBE_METADATA_KEY, json.dumps(result, ensure_ascii=False))
     return result
