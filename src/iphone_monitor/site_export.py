@@ -72,6 +72,7 @@ def build_site_data(
             "diag": {
                 "last_cycle": _metadata_json(store, "last_cycle"),
                 "last_source_error": _metadata_json(store, "last_source_error"),
+                "detail_probe": _metadata_json(store, "detail_probe_v1"),
                 "seen_total": _store_count(store, "count_seen"),
                 "pending_notifications": _store_count(
                     store, "count_pending_notifications"

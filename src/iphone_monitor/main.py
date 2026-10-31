@@ -18,6 +18,7 @@ from .daily import send_daily_summary_if_due
 from .github_publish import GitHubPublishError, publish_snapshot
 from .health import write_status
 from .instance_lock import InstanceLock
+from .item_detail import run_probe_once
 from .json_api_source import ListingsSourceError
 from .monitor import Monitor, _send_photo, _send_text
 from .runtime import RetrySchedule
@@ -220,6 +221,13 @@ def run() -> None:
             warm_up_price_history(source, store)
         except (OSError, sqlite3.Error) as exc:
             log_event("price_warmup_failed", error=str(exc))
+        try:
+            probe_result = run_probe_once(store, source)
+            if probe_result is not None:
+                log_event("detail_probe_finished", ok=probe_result.get("ok"))
+                publish_site_data(store, settings, force=True)
+        except (AvitoApiError, OSError, sqlite3.Error) as exc:
+            log_event("detail_probe_failed", error=str(exc))
     offset = None
     retry_schedule = RetrySchedule(
         base_delay_seconds=settings.source_retry_base_seconds,

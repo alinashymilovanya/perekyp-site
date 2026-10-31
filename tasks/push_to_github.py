@@ -10,7 +10,17 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 API = "https://api.github.com"
-SKIP_DIRS = {".git", "data", ".venv", "__pycache__", ".pytest_cache", "node_modules"}
+SKIP_DIRS = {
+    ".git",
+    ".tools",
+    ".venv",
+    "backup",
+    "data",
+    "node_modules",
+    "preview",
+    "__pycache__",
+    ".pytest_cache",
+}
 SKIP_FILES = {".env", "site/site-data.json"}
 SKIP_PREFIXES = (".github/workflows/",)
 
