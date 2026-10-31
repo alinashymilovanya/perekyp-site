@@ -306,13 +306,13 @@ body{overflow-x:clip}
         <div class="sec-no"><s></s>02 / Находки</div>
         <h2>Сегодняшний улов</h2>
       </div>
-      <a class="sec-link" href="#">Все находки →</a>
+      <a class="sec-link" href="cabinet.html">Все находки →</a>
     </div>
 
     <div class="dfilter">
       <span class="df-label">Авито Доставка</span>
-      <span class="chip on">Все</span><span class="chip">Есть</span><span class="chip">Нет</span>
-      <span class="df-note">фильтр заработает после запуска</span>
+      <span class="chip on" data-v="all">Все</span><span class="chip" data-v="yes">Есть</span><span class="chip" data-v="no">Нет</span>
+      <span class="df-note">фильтр по доставке Авито</span>
     </div>
 
     <div class="row hd"><span class="r-mod">Модель</span><span class="r-price">Цена</span><span class="r-market">Рынок</span><span class="r-mar">Маржа</span><span class="r-deliv">Доставка</span><span class="r-verdict">Вердикт</span><span class="r-time" style="text-align:right">Найдено</span></div>
@@ -490,11 +490,11 @@ body{overflow-x:clip}
   </div>
   <div>
     <h4>Контакты</h4>
-    <ul><li><a href="https://t.me/perekypibot" target="_blank" rel="noopener">@perekypibot — бот</a></li><li><a href="https://t.me/Aalishhechka" target="_blank" rel="noopener">@Aalishhechka — связь</a></li><li><a href="#">Вся Россия</a></li><li><a href="#">Демо по запросу</a></li></ul>
+    <ul><li><a href="https://t.me/perekypibot" target="_blank" rel="noopener">@perekypibot — бот</a></li><li><a href="https://t.me/Aalishhechka" target="_blank" rel="noopener">@Aalishhechka — связь</a></li><li>Вся Россия, без выбора города</li></ul>
   </div>
   <div>
     <h4>Документы</h4>
-    <ul><li><a href="#">Политика данных</a></li><li><a href="#">Условия сервиса</a></li><li><a href="#">Оферта</a></li></ul>
+    <ul><li><a href="legal.html#privacy">Политика данных</a></li><li><a href="legal.html#terms">Условия сервиса</a></li><li><a href="legal.html#offer">Оферта</a></li></ul>
   </div>
   <div class="legal"><span>© VISHIT 2026</span><span>Источник данных — Avito</span><span>Работаем по всей России</span></div>
 </footer>
@@ -507,6 +507,24 @@ if (q.get('id')) {
   var el = document.getElementById(q.get('id'));
   if (el) setTimeout(function () { el.scrollIntoView({ block: 'start' }); }, 50);
 }
+
+/* фильтр «Авито Доставка» на главной */
+(function(){
+  var chips = [].slice.call(document.querySelectorAll('.dfilter .chip'));
+  var rows = [].slice.call(document.querySelectorAll('.finds .row')).filter(function(r){ return !r.classList.contains('hd'); });
+  chips.forEach(function(chip){
+    chip.addEventListener('click', function(){
+      chips.forEach(function(c){ c.classList.toggle('on', c === chip); });
+      var v = chip.getAttribute('data-v');
+      rows.forEach(function(r){
+        var cell = r.querySelector('.deliv');
+        var has = cell ? cell.textContent.trim() === 'Есть' : false;
+        var show = v === 'all' || (v === 'yes' && has) || (v === 'no' && !has);
+        r.style.display = show ? '' : 'none';
+      });
+    });
+  });
+})();
 </script>
 </body>
 </html>
