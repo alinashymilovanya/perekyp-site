@@ -32,6 +32,26 @@ _BLOCK_MARKERS = (
     "проблема с IP",
     "Подтвердите, что вы не робот",
 )
+_BLOCK_PAGE_TEXTS = (
+    "Страница не загрузилась",
+    "Доступ ограничен",
+    "проблема с IP",
+    "проблем с IP",
+    "Пройти проверку",
+    "проверка безопасности",
+)
+
+
+def looks_like_block_page(*texts: str) -> bool:
+    """True when the answer is Avito's IP-check page instead of a card."""
+    for text in texts:
+        lowered = str(text or "").lower().replace("ё", "е")
+        for marker in _BLOCK_PAGE_TEXTS:
+            if marker.lower().replace("ё", "е") in lowered:
+                return True
+    return False
+
+
 _CONDITION_MAP = {
     "новое": "Новый",
     "новый": "Новый",

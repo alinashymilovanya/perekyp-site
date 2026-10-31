@@ -156,6 +156,18 @@ class RelayTests(unittest.TestCase):
         self.assertIsNotNone(self.store.load_item_detail("8372561555"))
         self.assertEqual(relay.sync(), [])
 
+    def test_sync_skips_block_pages(self):
+        answers = {
+            "details": {
+                "5": detail_payload("5", title="Страница не загрузилась из-за проблем с IP"),
+                "6": detail_payload("6"),
+            }
+        }
+        relay = self.make_relay({"site/detail-results.json": answers})
+        fresh = relay.sync()
+        self.assertEqual([item.item_id for item in fresh], ["6"])
+        self.assertIsNone(self.store.load_item_detail("5"))
+
     def test_sync_ignores_broken_payloads(self):
         answers = {"details": {"2": "нет", "3": None, "4": ["не", "словарь"]}}
         relay = self.make_relay({"site/detail-results.json": answers})

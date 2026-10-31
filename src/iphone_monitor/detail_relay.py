@@ -13,7 +13,7 @@ import urllib.parse
 import urllib.request
 
 from .github_publish import GitHubPublishError, publish_snapshot
-from .item_detail import ItemDetail, ItemDetailError, apply_detail
+from .item_detail import ItemDetail, ItemDetailError, apply_detail, looks_like_block_page
 from .telemetry import log_event
 
 REQUESTS_PATH = "site/detail-requests.json"
@@ -157,6 +157,9 @@ class DetailRelay:
             if not isinstance(raw, dict):
                 continue
             if self.store.load_item_detail(item_id) is not None:
+                continue
+            if looks_like_block_page(raw.get("title"), raw.get("description")):
+                log_event("detail_result_skipped_block", item_id=item_id)
                 continue
             try:
                 detail = ItemDetail.from_payload(raw)

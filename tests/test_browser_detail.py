@@ -75,6 +75,24 @@ class ParsePayloadTests(unittest.TestCase):
         with self.assertRaises(ItemDetailError):
             parse_browser_payload("<html>Доступ ограничен</html>", "1")
 
+    def test_block_page_is_not_a_card(self):
+        raw = json.dumps(
+            {
+                "title": "Страница не загрузилась из-за проблем с IP",
+                "params": [],
+                "specs": [],
+                "description": "",
+                "price": "",
+                "date": "",
+                "item_id": "",
+                "seller": "",
+                "page": "Страница не загрузилась из-за проблем с IP",
+            }
+        )
+        with self.assertRaises(ItemDetailError) as caught:
+            parse_browser_payload(raw, "1")
+        self.assertTrue(caught.exception.blocked)
+
     def test_empty_card_raises(self):
         raw = json.dumps({"title": "", "params": [], "description": "", "page": "Доступ ограничен"})
         with self.assertRaises(ItemDetailError):

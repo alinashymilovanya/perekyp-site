@@ -25,7 +25,11 @@ from iphone_monitor.detail_relay import (  # noqa: E402
 )
 from iphone_monitor.github_publish import GitHubPublishError, publish_snapshot  # noqa: E402
 from iphone_monitor.instance_lock import InstanceLock  # noqa: E402
-from iphone_monitor.item_detail import ItemDetailError, load_detail  # noqa: E402
+from iphone_monitor.item_detail import (  # noqa: E402
+    ItemDetailError,
+    load_detail,
+    looks_like_block_page,
+)
 from iphone_monitor.telemetry import configure_logging, log_event  # noqa: E402
 
 POLL_SECONDS = 20.0
@@ -59,7 +63,18 @@ def _load_published(fetch, repo: str, branch: str, token: str = "") -> dict:
         payload = fetch(contents_url(repo, RESULTS_PATH, branch), token=token)
     except (OSError, ValueError):
         return {}
-    return payload if isinstance(payload, dict) else {}
+    if not isinstance(payload, dict):
+        return {}
+    published = payload.get("details")
+    if isinstance(published, dict):
+        payload = dict(payload)
+        payload["details"] = {
+            str(item_id): raw
+            for item_id, raw in published.items()
+            if isinstance(raw, dict)
+            and not looks_like_block_page(raw.get("title"), raw.get("description"))
+        }
+    return payload
 
 
 def _read_requests(fetch, repo: str, branch: str, token: str = "") -> list[dict]:

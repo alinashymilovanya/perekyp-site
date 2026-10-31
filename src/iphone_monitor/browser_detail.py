@@ -21,6 +21,7 @@ from .item_detail import (
     _lookup,
     _normalize_condition,
     _storage_gb,
+    looks_like_block_page,
     _BATTERY_TITLES,
     _COLOR_TITLES,
     _SIM_TITLES,
@@ -149,6 +150,12 @@ def parse_browser_payload(raw: str, item_id: str, *, now: datetime | None = None
     )
     description = _clean(data.get("description") or "")
     title = _clean(data.get("title") or "")
+    page = str(data.get("page") or "")
+    if looks_like_block_page(title, description, page):
+        raise ItemDetailError(
+            f"Avito показал проверку IP вместо карточки: {title[:80]}",
+            blocked=True,
+        )
     if not title and not description and not params:
         raise ItemDetailError(f"empty card for {item_id}: {str(data.get('page') or '')[:120]}")
     condition = _normalize_condition(_lookup(params, CONDITION_TITLES))
@@ -223,7 +230,12 @@ class BrowserDetailReader:
         else:
             self._runner(["navigate", url])
         self._opened = True
-        self._runner(["wait", "stable", "--timeout", "30000"])
+        try:
+            self._runner(["wait", "stable", "--timeout", "30000"])
+        except ItemDetailError:
+            # A block page never settles; read whatever the DOM holds and let
+            # parse_browser_payload decide whether it is a real card.
+            pass
         raw = self._runner(["eval", detail_script()])
         try:
             detail = parse_browser_payload(raw, item_id)

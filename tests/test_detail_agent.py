@@ -107,6 +107,19 @@ class AgentRoundTests(unittest.TestCase):
             detail_agent.run_round(state, self.settings, self.fetch, sleep=lambda s: None), 0
         )
 
+    def test_published_block_pages_are_dropped(self):
+        payload = {
+            "generated_at": 1.0,
+            "details": {
+                "1": {"title": "Страница не загрузилась из-за проблем с IP"},
+                "2": {"title": "iPhone 17", "condition": "Новый"},
+            },
+        }
+        fetched = detail_agent._load_published(
+            lambda url, **kwargs: payload, "u/r", "master", "t"
+        )
+        self.assertEqual(list(fetched["details"]), ["2"])
+
     def test_trim_keeps_newest(self):
         details = {str(index): {} for index in range(10)}
         trimmed = detail_agent._trim(details)
