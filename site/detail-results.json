@@ -53,7 +53,23 @@
       "sim": "Только eSIM",
       "storage_gb": 512,
       "title": "iPhone 17 Pro, 512 ГБ, eSIM"
+    },
+    "8398543094": {
+      "address": "",
+      "battery_percent": null,
+      "color": "",
+      "condition": null,
+      "description": "",
+      "images": [],
+      "item_id": "8398543094",
+      "params": [],
+      "price_rub": null,
+      "published_at": "",
+      "seller_name": "",
+      "sim": "",
+      "storage_gb": null,
+      "title": "Страница не загрузилась из-за проблем с IP"
     }
   },
-  "generated_at": 1793448856.364169
+  "generated_at": 1793449007.2337308
 }
