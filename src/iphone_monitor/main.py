@@ -1,4 +1,4 @@
-﻿"""Long-polling entry point for the Telegram bot."""
+"""Long-polling entry point for the Telegram bot."""
 
 import ftplib
 import json
@@ -33,7 +33,7 @@ from .runtime import RetrySchedule
 from .site_export import build_site_data, upload_site_data, write_site_data
 from .source_factory import create_listings_source
 from .store import SeenStore
-from .telemetry import configure_logging, describe_exception, log_event
+from .telemetry import configure_logging, describe_exception, iso_timestamp, log_event
 from .telegram_api import TelegramApiError, TelegramClient
 from .telegram_mtproto import MtprotoTelegram
 
@@ -359,9 +359,12 @@ def _confirm_deploy(store, settings, publication: dict, commit: str) -> None:
 
 
 def flush_pending_notifications(store, telegram, limit: int = 10) -> int:
-    """Deliver notifications that were queued while Telegram was unreachable."""
+    """Deliver notifications that are due: retries and tariff-delayed signals."""
     delivered = 0
-    for notification_id, chat_id, kind, text, photo in store.pending_notifications(limit):
+    due_at = iso_timestamp()
+    for notification_id, chat_id, kind, text, photo in store.pending_notifications(
+        limit, due_at=due_at
+    ):
         sent = False
         if kind == "photo" and photo:
             sent = _send_photo(telegram, chat_id, photo, text)
@@ -672,6 +675,7 @@ def run() -> None:
                         weak_deal_margin_rub=settings.weak_deal_margin_rub,
                         enricher=enricher,
                         cycle_id=cycle_id,
+                        default_plan=getattr(settings, "default_plan", "pro"),
                     )
                     if relay is not None:
                         try:

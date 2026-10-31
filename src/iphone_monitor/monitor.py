@@ -6,6 +6,7 @@ import time
 from datetime import datetime, timedelta, timezone
 from typing import Sequence
 
+from . import plans
 from .analysis import analyze_listing
 from .avito_parser import ParsedListing
 from .formatter import ListingView, format_detail_addendum, format_listing_message
@@ -49,6 +50,7 @@ class Monitor:
         weak_deal_margin_rub: int = 1_500,
         enricher=None,
         cycle_id: str | None = None,
+        default_plan: str = "pro",
     ):
         self.source = source
         self.store = store
@@ -67,6 +69,9 @@ class Monitor:
         self.enricher = enricher
         # Ties every record of this cycle together in the admin log.
         self.cycle_id = cycle_id
+        # Тариф, который получает чат без аккаунта: действующие подписчики
+        # не должны внезапно оказаться на Free после обновления кода.
+        self.default_plan = default_plan
 
     @staticmethod
     def _batch_prices(listing: ParsedListing, listings: tuple[ParsedListing, ...]) -> list[int]:
@@ -122,10 +127,69 @@ class Monitor:
             return listing
 
     def _send(self, listing: ParsedListing, message: str) -> dict[str, int]:
+        """Deliver one signal according to the person's tariff.
+
+        Free has three signals a day and a delay of up to thirty minutes, Pro
+        and above are unlimited and fast. The limit is enforced here, on the
+        server, and not in the cabinet: otherwise it is a drawing, not a
+        product.
+        """
         photo = listing.images[0] if listing.images and len(message) <= 1_024 else None
         sent = 0
         queued = 0
+        delayed = 0
+        suppressed = 0
+        plan_code = ""
+        plan_limit: int | None = None
+        plan_used = 0
         for chat_id in self.chat_ids:
+            account = self.store.ensure_account(chat_id, self.default_plan)
+            current = plans.effective_plan(account.plan, account.plan_until)
+            today = plans.day_key()
+            used = self.store.signals_used(chat_id, today)
+            room = plans.quota(current.code, used)
+            if room.exhausted:
+                suppressed += 1
+                plan_code, plan_limit, plan_used = current.code, room.limit, used
+                log_event(
+                    "notification_suppressed",
+                    status="skipped",
+                    component="monitor",
+                    cycle_id=self.cycle_id,
+                    listing_id=listing.item_id,
+                    reason="limit_reached",
+                    plan=current.code,
+                    limit=room.limit,
+                    used=used,
+                    chat_id=chat_id,
+                )
+                continue
+            used_after = self.store.consume_signal(chat_id, today)
+            if current.queue_seconds > 0:
+                # Free does not lose the signal: it waits in the outbox until
+                # its delivery moment instead of interrupting the hot minute.
+                deliver_at = plans.iso_in(plans.now_utc(), current.queue_seconds)
+                self.store.enqueue_notification(
+                    chat_id,
+                    "photo" if photo else "message",
+                    message,
+                    photo,
+                    deliver_at=deliver_at,
+                )
+                delayed += 1
+                log_event(
+                    "notification_delayed",
+                    status="queued",
+                    component="monitor",
+                    cycle_id=self.cycle_id,
+                    listing_id=listing.item_id,
+                    plan=current.code,
+                    delay_seconds=current.delay_seconds,
+                    deliver_at=deliver_at,
+                    used=used_after,
+                    chat_id=chat_id,
+                )
+                continue
             if photo and _send_photo(self.telegram, chat_id, photo, message):
                 sent += 1
                 continue
@@ -155,7 +219,15 @@ class Monitor:
                 messages=sent,
                 with_photo=bool(photo),
             )
-        return {"sent": sent, "queued": queued}
+        return {
+            "sent": sent,
+            "queued": queued,
+            "delayed": delayed,
+            "suppressed": suppressed,
+            "plan": plan_code,
+            "limit": plan_limit,
+            "used": plan_used,
+        }
 
     def _log_listing(self, event: str, listing: ParsedListing, status: str, **details) -> None:
         log_event(
@@ -244,6 +316,7 @@ class Monitor:
         skipped_after_detail = 0
         skipped_duplicate = 0
         skipped_suspicious = 0
+        skipped_limit = 0
         enriched_count = 0
         best_margin = None
         start_cycle = getattr(self.enricher, "start_cycle", None)
@@ -375,6 +448,24 @@ class Monitor:
                 extras=tuple(extras),
             )
             delivery = self._send(listing, format_listing_message(view))
+            if not delivery["sent"] and not delivery["delayed"] and not delivery["queued"]:
+                # The daily limit of the tariff is used up: the signal is not
+                # an error, it is simply not this person's today.
+                self.store.mark_seen(listing.item_id)
+                skipped_limit += 1
+                self._log_listing(
+                    "listing_skipped",
+                    listing,
+                    "skipped",
+                    reason="limit_reached",
+                    plan=delivery.get("plan"),
+                    limit=delivery.get("limit"),
+                    used=delivery.get("used"),
+                    price_rub=listing.price_rub,
+                    market_price_rub=analysis.market_price_rub,
+                    margin_rub=analysis.margin_rub,
+                )
+                continue
             stored_status = "success"
             stored_error = ""
             try:
@@ -416,6 +507,7 @@ class Monitor:
                 chats=len(self.chat_ids),
                 sent=delivery["sent"],
                 queued=delivery["queued"],
+                delayed=delivery["delayed"],
             )
             sent += 1
         log_event(
@@ -430,6 +522,7 @@ class Monitor:
             skipped_after_detail=skipped_after_detail,
             skipped_duplicate=skipped_duplicate,
             skipped_suspicious=skipped_suspicious,
+            skipped_limit=skipped_limit,
             enriched=enriched_count,
             notified=sent,
             best_margin_rub=best_margin,
@@ -448,6 +541,7 @@ class Monitor:
                     "skipped_after_detail": skipped_after_detail,
                     "skipped_duplicate": skipped_duplicate,
                     "skipped_suspicious": skipped_suspicious,
+                    "skipped_limit": skipped_limit,
                     "enriched": enriched_count,
                     "notified": sent,
                     "best_margin_rub": best_margin,

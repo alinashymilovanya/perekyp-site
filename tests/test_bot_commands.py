@@ -93,3 +93,60 @@ class BotCommandTests(unittest.TestCase):
                 )
 
                 self.assertIn("приостановлен", telegram.sent[0][1])
+
+    def test_start_creates_a_free_account(self):
+        telegram = FakeTelegram()
+        with tempfile.TemporaryDirectory() as directory:
+            with SeenStore(Path(directory) / "seen.sqlite3") as store:
+                handle_update(
+                    {"message": {"chat": {"id": 555}, "text": "/start"}},
+                    telegram,
+                    store=store,
+                )
+                self.assertEqual(store.account("555").plan, "free")
+
+    def test_plan_shows_the_tariff_and_the_remaining_signals(self):
+        telegram = FakeTelegram()
+        with tempfile.TemporaryDirectory() as directory:
+            with SeenStore(Path(directory) / "seen.sqlite3") as store:
+                handle_update(
+                    {"message": {"chat": {"id": 555}, "text": "/plan"}},
+                    telegram,
+                    store=store,
+                )
+                self.assertIn("Free", telegram.sent[0][1])
+                self.assertIn("из 3", telegram.sent[0][1])
+
+    def test_upgrade_lists_every_paid_tariff(self):
+        telegram = FakeTelegram()
+        handle_update({"message": {"chat": {"id": 555}, "text": "/upgrade"}}, telegram)
+
+        text = telegram.sent[0][1]
+        self.assertIn("690", text)
+        self.assertIn("1 490", text)
+        self.assertIn("3 900", text)
+
+    def test_track_explains_an_empty_tracker(self):
+        telegram = FakeTelegram()
+        with tempfile.TemporaryDirectory() as directory:
+            with SeenStore(Path(directory) / "seen.sqlite3") as store:
+                handle_update(
+                    {"message": {"chat": {"id": 555}, "text": "/track"}},
+                    telegram,
+                    store=store,
+                )
+                self.assertIn("Сделок пока нет", telegram.sent[0][1])
+
+                store.add_deal(
+                    "555",
+                    model="15 Pro",
+                    bought_price_rub=62_000,
+                    sold_price_rub=74_500,
+                    expenses_rub=2_000,
+                )
+                handle_update(
+                    {"message": {"chat": {"id": 555}, "text": "/track"}},
+                    telegram,
+                    store=store,
+                )
+                self.assertIn("10 500", telegram.sent[1][1])

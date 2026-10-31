@@ -50,6 +50,10 @@ class Settings:
     vision_playwright_path: str = "playwright"
     status_path: str = "data/runtime-status.json"
     log_path: str = "data/bot.log"
+    # Тариф для чата, у которого ещё нет аккаунта. "pro" сохраняет прежнее
+    # поведение для действующих подписчиков; новый человек получает Free
+    # через /start, где тариф задаётся явно.
+    default_plan: str = "pro"
     source_retry_base_seconds: int = 60
     source_retry_max_seconds: int = 1_800
     source_alert_after_seconds: int = 900
@@ -156,6 +160,7 @@ def load_settings(path: str | Path = ".env") -> Settings:
         vision_playwright_path=values.get("VISION_PLAYWRIGHT_PATH", "playwright"),
         status_path=values.get("STATUS_PATH", "data/runtime-status.json"),
         log_path=values.get("LOG_PATH", "data/bot.log"),
+        default_plan=(values.get("DEFAULT_PLAN", "pro").strip().lower() or "pro"),
         source_retry_base_seconds=int(values.get("SOURCE_RETRY_BASE_SECONDS", "60")),
         source_retry_max_seconds=int(values.get("SOURCE_RETRY_MAX_SECONDS", "1800")),
         source_alert_after_seconds=int(values.get("SOURCE_ALERT_AFTER_SECONDS", "900")),

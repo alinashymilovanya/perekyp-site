@@ -16,6 +16,16 @@ class NotifiedListing:
     url: str
 
 
+@dataclass(frozen=True)
+class Account:
+    """Подписка человека: тариф, срок и начало пробного периода."""
+
+    chat_id: str
+    plan: str
+    plan_until: str | None
+    trial_started_at: str | None
+
+
 class SeenStore:
     def __init__(self, path: str | Path):
         self._connection = sqlite3.connect(path)
@@ -58,8 +68,30 @@ class SeenStore:
             "item_id TEXT PRIMARY KEY, url TEXT NOT NULL DEFAULT '', title TEXT NOT NULL DEFAULT '', "
             "requested_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)"
         )
+        self._connection.execute(
+            "CREATE TABLE IF NOT EXISTS accounts ("
+            "chat_id TEXT PRIMARY KEY, plan TEXT NOT NULL DEFAULT 'free', plan_until TEXT, "
+            "trial_started_at TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, "
+            "updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)"
+        )
+        self._connection.execute(
+            "CREATE TABLE IF NOT EXISTS usage_counters ("
+            "chat_id TEXT NOT NULL, day TEXT NOT NULL, signals INTEGER NOT NULL DEFAULT 0, "
+            "PRIMARY KEY (chat_id, day))"
+        )
+        self._connection.execute(
+            "CREATE TABLE IF NOT EXISTS deals ("
+            "id INTEGER PRIMARY KEY AUTOINCREMENT, chat_id TEXT NOT NULL, listing_id TEXT, "
+            "model TEXT NOT NULL DEFAULT '', storage_gb INTEGER, bought_price_rub INTEGER, "
+            "sold_price_rub INTEGER, expenses_rub INTEGER NOT NULL DEFAULT 0, "
+            "status TEXT NOT NULL DEFAULT 'in_progress', "
+            "created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, sold_at TEXT)"
+        )
         self._ensure_column("notified_listings", "model", "TEXT")
         self._ensure_column("notified_listings", "storage_gb", "INTEGER")
+        # Tariff delay: a Free signal is queued with a future delivery moment
+        # instead of being dropped, so the person still gets it later.
+        self._ensure_column("pending_notifications", "deliver_at", "TEXT")
         self._connection.execute(
             "CREATE INDEX IF NOT EXISTS listing_prices_model "
             "ON listing_prices(model, storage_gb, condition)"
@@ -283,29 +315,202 @@ class SeenStore:
         )
         self._connection.commit()
 
-    def enqueue_notification(self, chat_id: str, kind: str, text: str, photo: str | None = None) -> None:
-        """Park a notification in the outbox until Telegram is reachable again."""
+    def enqueue_notification(
+        self,
+        chat_id: str,
+        kind: str,
+        text: str,
+        photo: str | None = None,
+        *,
+        deliver_at: str | None = None,
+    ) -> None:
+        """Park a notification in the outbox until Telegram is reachable again.
+
+        ``deliver_at`` also delays a healthy notification: the Free tariff
+        promises «задержка до 30 минут», so the record waits in the same
+        outbox instead of a separate scheduler.
+        """
         self._connection.execute(
-            "INSERT INTO pending_notifications(chat_id, kind, text, photo) VALUES (?, ?, ?, ?)",
-            (str(chat_id), kind, text, photo),
+            "INSERT INTO pending_notifications(chat_id, kind, text, photo, deliver_at) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (str(chat_id), kind, text, photo, deliver_at),
         )
         self._connection.commit()
 
-    def pending_notifications(self, limit: int = 10) -> tuple[tuple[int, str, str, str, str | None], ...]:
-        rows = self._connection.execute(
-            "SELECT id, chat_id, kind, text, photo FROM pending_notifications "
-            "ORDER BY id LIMIT ?",
-            (limit,),
-        ).fetchall()
+    def pending_notifications(
+        self,
+        limit: int = 10,
+        *,
+        due_at: str | None = None,
+    ) -> tuple[tuple[int, str, str, str, str | None], ...]:
+        """Notifications waiting in the outbox, oldest first.
+
+        ``due_at`` filters out delayed records whose moment has not come yet.
+        """
+        if due_at is None:
+            rows = self._connection.execute(
+                "SELECT id, chat_id, kind, text, photo FROM pending_notifications "
+                "ORDER BY id LIMIT ?",
+                (limit,),
+            ).fetchall()
+        else:
+            rows = self._connection.execute(
+                "SELECT id, chat_id, kind, text, photo FROM pending_notifications "
+                "WHERE deliver_at IS NULL OR deliver_at <= ? ORDER BY id LIMIT ?",
+                (str(due_at), limit),
+            ).fetchall()
         return tuple((int(row[0]), str(row[1]), str(row[2]), str(row[3]), row[4]) for row in rows)
 
     def delete_notification(self, notification_id: int) -> None:
         self._connection.execute("DELETE FROM pending_notifications WHERE id = ?", (notification_id,))
         self._connection.commit()
 
-    def count_pending_notifications(self) -> int:
-        row = self._connection.execute("SELECT COUNT(*) FROM pending_notifications").fetchone()
+    def count_pending_notifications(self, *, due_at: str | None = None) -> int:
+        if due_at is None:
+            row = self._connection.execute("SELECT COUNT(*) FROM pending_notifications").fetchone()
+        else:
+            row = self._connection.execute(
+                "SELECT COUNT(*) FROM pending_notifications "
+                "WHERE deliver_at IS NULL OR deliver_at <= ?",
+                (str(due_at),),
+            ).fetchone()
         return int(row[0])
+
+    # --- accounts, quotas and deals (monetisation) -------------------------
+
+    def account(self, chat_id: str) -> Account:
+        """Аккаунт человека; при первом обращении создаётся на тарифе Free."""
+        self._connection.execute(
+            "INSERT OR IGNORE INTO accounts(chat_id) VALUES (?)", (str(chat_id),)
+        )
+        self._connection.commit()
+        row = self._connection.execute(
+            "SELECT chat_id, plan, plan_until, trial_started_at FROM accounts WHERE chat_id = ?",
+            (str(chat_id),),
+        ).fetchone()
+        return Account(
+            chat_id=str(row[0]),
+            plan=str(row[1] or "free"),
+            plan_until=row[2],
+            trial_started_at=row[3],
+        )
+
+    def set_plan(
+        self,
+        chat_id: str,
+        plan: str,
+        *,
+        plan_until: str | None = None,
+        trial_started_at: str | None = None,
+    ) -> Account:
+        """Выдаёт тариф и срок; ``trial_started_at`` заполняется один раз."""
+        self.account(chat_id)
+        self._connection.execute(
+            "UPDATE accounts SET plan = ?, plan_until = ?, "
+            "trial_started_at = COALESCE(trial_started_at, ?), "
+            "updated_at = CURRENT_TIMESTAMP WHERE chat_id = ?",
+            (str(plan), plan_until, trial_started_at, str(chat_id)),
+        )
+        self._connection.commit()
+        return self.account(chat_id)
+
+    def ensure_account(self, chat_id: str, default_plan: str = "free") -> Account:
+        """Создаёт аккаунт с явным тарифом по умолчанию и возвращает его.
+
+        Нужен, чтобы действующие подписчики не превратились в Free при
+        обновлении: бот передаёт сюда свой ``DEFAULT_PLAN``.
+        """
+        self._connection.execute(
+            "INSERT OR IGNORE INTO accounts(chat_id, plan) VALUES (?, ?)",
+            (str(chat_id), str(default_plan)),
+        )
+        self._connection.commit()
+        return self.account(chat_id)
+
+    def signals_used(self, chat_id: str, day: str) -> int:
+        row = self._connection.execute(
+            "SELECT signals FROM usage_counters WHERE chat_id = ? AND day = ?",
+            (str(chat_id), str(day)),
+        ).fetchone()
+        return int(row[0]) if row else 0
+
+    def consume_signal(self, chat_id: str, day: str) -> int:
+        """Списывает один сигнал и возвращает счётчик за сутки."""
+        self._connection.execute(
+            "INSERT INTO usage_counters(chat_id, day, signals) VALUES (?, ?, 1) "
+            "ON CONFLICT(chat_id, day) DO UPDATE SET signals = signals + 1",
+            (str(chat_id), str(day)),
+        )
+        self._connection.commit()
+        return self.signals_used(chat_id, day)
+
+    def add_deal(
+        self,
+        chat_id: str,
+        *,
+        listing_id: str | None = None,
+        model: str = "",
+        storage_gb: int | None = None,
+        bought_price_rub: int | None = None,
+        sold_price_rub: int | None = None,
+        expenses_rub: int = 0,
+        status: str = "in_progress",
+    ) -> int:
+        cursor = self._connection.execute(
+            "INSERT INTO deals(chat_id, listing_id, model, storage_gb, bought_price_rub, "
+            "sold_price_rub, expenses_rub, status, sold_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, "
+            "CASE WHEN ? IS NULL THEN NULL ELSE CURRENT_TIMESTAMP END)",
+            (
+                str(chat_id),
+                listing_id,
+                model,
+                storage_gb,
+                bought_price_rub,
+                sold_price_rub,
+                int(expenses_rub),
+                status,
+                sold_price_rub,
+            ),
+        )
+        self._connection.commit()
+        return int(cursor.lastrowid)
+
+    def list_deals(self, chat_id: str, limit: int = 50) -> tuple[dict, ...]:
+        rows = self._connection.execute(
+            "SELECT id, listing_id, model, storage_gb, bought_price_rub, sold_price_rub, "
+            "expenses_rub, status, created_at FROM deals WHERE chat_id = ? "
+            "ORDER BY id DESC LIMIT ?",
+            (str(chat_id), limit),
+        ).fetchall()
+        return tuple(
+            {
+                "id": int(row[0]),
+                "listing_id": row[1],
+                "model": str(row[2] or ""),
+                "storage_gb": row[3],
+                "bought_price_rub": row[4],
+                "sold_price_rub": row[5],
+                "expenses_rub": int(row[6] or 0),
+                "status": str(row[7]),
+                "created_at": str(row[8]),
+                "profit_rub": _deal_profit(row[4], row[5], row[6]),
+            }
+            for row in rows
+        )
+
+    def deals_summary(self, chat_id: str) -> dict:
+        """Итог трекера: сколько сделок, сколько денег и средняя маржа."""
+        rows = self.list_deals(chat_id, limit=1_000)
+        sold = [row for row in rows if row["profit_rub"] is not None]
+        profit = sum(int(row["profit_rub"]) for row in sold)
+        revenue = sum(int(row["sold_price_rub"] or 0) for row in sold)
+        return {
+            "count": len(rows),
+            "sold": len(sold),
+            "profit_rub": profit,
+            "revenue_rub": revenue,
+            "avg_profit_rub": round(profit / len(sold)) if sold else 0,
+        }
 
     def add_subscriber(self, chat_id: str) -> None:
         self._connection.execute(
@@ -406,3 +611,13 @@ class SeenStore:
 
     def __exit__(self, exc_type, exc_value, traceback) -> None:
         self.close()
+
+def _deal_profit(
+    bought_price_rub: int | None,
+    sold_price_rub: int | None,
+    expenses_rub: int | None,
+) -> int | None:
+    """Прибыль по сделке; None, пока не известны и покупка, и продажа."""
+    if bought_price_rub is None or sold_price_rub is None:
+        return None
+    return int(sold_price_rub) - int(bought_price_rub) - int(expenses_rub or 0)
