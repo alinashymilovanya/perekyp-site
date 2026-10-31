@@ -168,6 +168,16 @@ class RelayTests(unittest.TestCase):
         self.assertEqual([item.item_id for item in fresh], ["6"])
         self.assertIsNone(self.store.load_item_detail("5"))
 
+    def test_sync_skips_nbsp_block_titles(self):
+        answers = {
+            "details": {
+                "7": detail_payload("7", title="Страница не загрузилась из-за проблем с IP"),
+            }
+        }
+        relay = self.make_relay({"site/detail-results.json": answers})
+        self.assertEqual(relay.sync(), [])
+        self.assertIsNone(self.store.load_item_detail("7"))
+
     def test_sync_ignores_broken_payloads(self):
         answers = {"details": {"2": "нет", "3": None, "4": ["не", "словарь"]}}
         relay = self.make_relay({"site/detail-results.json": answers})

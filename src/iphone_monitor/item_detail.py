@@ -42,12 +42,23 @@ _BLOCK_PAGE_TEXTS = (
 )
 
 
+def _fold(text: str) -> str:
+    cleaned = (
+        str(text or "")
+        .replace("\u00a0", " ")
+        .replace("\u2009", " ")
+        .replace("\u202f", " ")
+    )
+    return re.sub(r"\s+", " ", cleaned).strip().lower().replace("ё", "е")
+
+
 def looks_like_block_page(*texts: str) -> bool:
     """True when the answer is Avito's IP-check page instead of a card."""
+    markers = tuple(_fold(marker) for marker in _BLOCK_PAGE_TEXTS)
     for text in texts:
-        lowered = str(text or "").lower().replace("ё", "е")
-        for marker in _BLOCK_PAGE_TEXTS:
-            if marker.lower().replace("ё", "е") in lowered:
+        folded = _fold(text)
+        for marker in markers:
+            if marker in folded:
                 return True
     return False
 

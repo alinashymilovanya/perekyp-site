@@ -93,6 +93,14 @@ class ParsePayloadTests(unittest.TestCase):
             parse_browser_payload(raw, "1")
         self.assertTrue(caught.exception.blocked)
 
+    def test_block_page_with_nbsp_title_is_caught(self):
+        raw = json.dumps(
+            {"title": "Страница не загрузилась из-за проблем с IP", "params": []}
+        )
+        with self.assertRaises(ItemDetailError) as caught:
+            parse_browser_payload(raw, "1")
+        self.assertTrue(caught.exception.blocked)
+
     def test_empty_card_raises(self):
         raw = json.dumps({"title": "", "params": [], "description": "", "page": "Доступ ограничен"})
         with self.assertRaises(ItemDetailError):
