@@ -34,6 +34,9 @@ class Settings:
     detail_max_per_cycle: int = 4
     detail_pause_seconds: float = 4.0
     detail_cooldown_minutes: int = 15
+    detail_relay_enabled: bool = True
+    detail_wait_seconds: float = 40.0
+    detail_relay_poll_seconds: float = 5.0
     database_path: str = "data/seen.sqlite3"
     poll_interval_seconds: int = 60
     max_listings_per_poll: int = 50
@@ -129,6 +132,10 @@ def load_settings(path: str | Path = ".env") -> Settings:
         detail_max_per_cycle=int(values.get("DETAIL_MAX_PER_CYCLE", "4")),
         detail_pause_seconds=float(values.get("DETAIL_PAUSE_SECONDS", "4")),
         detail_cooldown_minutes=int(values.get("DETAIL_COOLDOWN_MINUTES", "15")),
+        detail_relay_enabled=values.get("DETAIL_RELAY_ENABLED", "1").strip().lower()
+        not in {"0", "false", "no", "off"},
+        detail_wait_seconds=float(values.get("DETAIL_WAIT_SECONDS", "40")),
+        detail_relay_poll_seconds=float(values.get("DETAIL_RELAY_POLL_SECONDS", "5")),
         database_path=values.get("DATABASE_PATH", "data/seen.sqlite3"),
         poll_interval_seconds=int(values.get("POLL_INTERVAL_SECONDS", "60")),
         max_listings_per_poll=int(values.get("MAX_LISTINGS_PER_POLL", "50")),

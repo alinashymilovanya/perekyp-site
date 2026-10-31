@@ -6,6 +6,8 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 MAX_CAPTION_CHARS = 1_024
 DESCRIPTION_LIMIT = 300
+ADDENDUM_DESCRIPTION_LIMIT = 600
+ADDENDUM_MAX_CHARS = 3_900
 SUMMARY_TIMEZONE = "Europe/Astrakhan"
 TRUNCATION_MARK = "…"
 
@@ -113,6 +115,46 @@ def _render(listing: ListingView, description_limit: int) -> str:
     parts.append("")
     parts.append(f"🔗 {listing.url}")
     return "\n".join(parts)
+
+
+def format_detail_addendum(
+    *,
+    title: str,
+    url: str,
+    condition: str | None = None,
+    battery_percent: int | None = None,
+    description: str = "",
+    extras: tuple[str, ...] = (),
+    location: str = "",
+    published_at: str = "",
+) -> str:
+    """A second message with the page facts that arrived after the first one."""
+    parts = ["🔎 Подробности объявления", f"📱 {title}"]
+    lines = []
+    if condition:
+        lines.append(f"Состояние: {condition}")
+    if battery_percent is not None:
+        lines.append(f"Аккумулятор: {battery_percent}%")
+    if extras:
+        lines.append(" · ".join(extras))
+    if location:
+        lines.append(f"📍 {location}")
+    published = _published(published_at)
+    if published:
+        lines.append(f"🕒 Опубликовано: {published}")
+    if lines:
+        parts.append("")
+        parts.extend(lines)
+    text = _shorten(description, ADDENDUM_DESCRIPTION_LIMIT)
+    if text:
+        parts.append("")
+        parts.append(f"Описание: {text}")
+    parts.append("")
+    parts.append(f"🔗 {url}")
+    message = "\n".join(parts)
+    if len(message) > ADDENDUM_MAX_CHARS:
+        message = message[: ADDENDUM_MAX_CHARS - 1] + TRUNCATION_MARK
+    return message
 
 
 def format_listing_message(listing: ListingView) -> str:

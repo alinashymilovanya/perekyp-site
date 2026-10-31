@@ -6,7 +6,7 @@ from typing import Sequence
 
 from .analysis import analyze_listing
 from .avito_parser import ParsedListing
-from .formatter import ListingView, format_listing_message
+from .formatter import ListingView, format_detail_addendum, format_listing_message
 from .telegram_api import TelegramApiError
 from .telemetry import log_event
 
@@ -120,6 +120,43 @@ class Monitor:
             self.store.enqueue_notification(
                 chat_id, "photo" if photo else "message", message, photo
             )
+
+    def send_detail_addendums(self, limit: int = 3) -> int:
+        """Deliver page facts that arrived after their listing was notified."""
+        sent = 0
+        for item_id, url, title in self.store.detail_requests(limit):
+            detail = self.store.load_item_detail(item_id)
+            if detail is None:
+                # The home agent has not read this page yet: keep the request.
+                continue
+            extras = []
+            if detail.color:
+                extras.append(f"Цвет: {detail.color}")
+            if detail.sim:
+                extras.append(f"SIM: {detail.sim}")
+            message = format_detail_addendum(
+                title=detail.title or title or item_id,
+                url=url,
+                condition=detail.condition,
+                battery_percent=detail.battery_percent,
+                description=detail.description,
+                extras=tuple(extras),
+                location=detail.address,
+                published_at=detail.published_at,
+            )
+            for chat_id in self.chat_ids:
+                if _send_text(self.telegram, chat_id, message):
+                    continue
+                self.store.enqueue_notification(chat_id, "message", message, None)
+            self.store.drop_detail_request(item_id)
+            sent += 1
+            log_event(
+                "detail_addendum_sent",
+                item_id=item_id,
+                condition=detail.condition,
+                battery=detail.battery_percent,
+            )
+        return sent
 
     def process_once(self) -> int:
         listings = tuple(self.source.fetch())

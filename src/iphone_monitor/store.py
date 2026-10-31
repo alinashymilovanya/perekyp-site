@@ -53,6 +53,11 @@ class SeenStore:
             "item_id TEXT PRIMARY KEY, fetched_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, "
             "payload TEXT NOT NULL)"
         )
+        self._connection.execute(
+            "CREATE TABLE IF NOT EXISTS detail_requests ("
+            "item_id TEXT PRIMARY KEY, url TEXT NOT NULL DEFAULT '', title TEXT NOT NULL DEFAULT '', "
+            "requested_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)"
+        )
         self._ensure_column("notified_listings", "model", "TEXT")
         self._ensure_column("notified_listings", "storage_gb", "INTEGER")
         self._connection.execute(
@@ -246,6 +251,37 @@ class SeenStore:
     def count_item_details(self) -> int:
         row = self._connection.execute("SELECT COUNT(*) FROM item_details").fetchone()
         return int(row[0])
+
+    def add_detail_request(self, item_id: str, url: str, title: str = "") -> None:
+        """Remember a listing whose page still has to be read by the home agent."""
+        self._connection.execute(
+            "INSERT OR IGNORE INTO detail_requests(item_id, url, title) VALUES (?, ?, ?)",
+            (str(item_id), url or "", title or ""),
+        )
+        self._connection.commit()
+
+    def detail_requests(self, limit: int = 50) -> tuple[tuple[str, str, str], ...]:
+        rows = self._connection.execute(
+            "SELECT item_id, url, title FROM detail_requests "
+            "ORDER BY requested_at DESC, item_id DESC LIMIT ?",
+            (limit,),
+        ).fetchall()
+        return tuple((str(row[0]), str(row[1]), str(row[2])) for row in rows)
+
+    def drop_detail_request(self, item_id: str) -> None:
+        self._connection.execute("DELETE FROM detail_requests WHERE item_id = ?", (str(item_id),))
+        self._connection.commit()
+
+    def count_detail_requests(self) -> int:
+        row = self._connection.execute("SELECT COUNT(*) FROM detail_requests").fetchone()
+        return int(row[0])
+
+    def prune_detail_requests(self, days: int = 3) -> None:
+        self._connection.execute(
+            "DELETE FROM detail_requests WHERE requested_at < datetime('now', ?)",
+            (f"-{int(days)} day",),
+        )
+        self._connection.commit()
 
     def enqueue_notification(self, chat_id: str, kind: str, text: str, photo: str | None = None) -> None:
         """Park a notification in the outbox until Telegram is reachable again."""
