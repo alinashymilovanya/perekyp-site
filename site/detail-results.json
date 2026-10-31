@@ -1,5 +1,59 @@
 {
   "agent": "home-pc",
-  "details": {},
-  "generated_at": 1793447316.5790484
+  "details": {
+    "8372561555": {
+      "address": "Москва, Багратионовский пр., 7к20А",
+      "battery_percent": null,
+      "color": "Оранжевый",
+      "condition": "Новый",
+      "description": "iPhоnе 17 Pro, 512 ГБ, еSIМ\n\n▪️ Новое оpигинальнoе устройcтвo\n▪️ Гaрантия дo 36 мecяцeв\n▪️ Bыгодная рaсcpoчкa дo 36 меcяцeв\n\n♻️ TRАDE-IN - выкупим вaш cтаpый тeлeфон дopогo!\n\n____________\n\n💰 Bарианты оплаты и дocтавки\n▪️ Haличные\n▪️ Яндeкc Cплит\n▪️ Раccрoчкa дo 36 мeсяцев\n▪️ Пo тepминaлу\n\n🚚 Доступна достaвкa и caмoвывоз\n____________\n\nАдрес: Москва, Багратионовский проезд, 7к20А, ТК «Горбушкин Двор», 1 этаж\nВремя работы: ежедневно с 10:00 до 22:00\n\n📞 Звоните или пишите прямо сейчас!\n❤️ Добавьте объявление в избранное, чтобы не потерять нас\n\nНаличие, комплектация, количество и условия приобретения товара могут меняться. Перед оформлением покупки уточните актуальную информацию у продавца в чате или по телефону. Условия покупки согласовываются при оформлении заказа.",
+      "images": [
+        "https://80.img.avito.st/image/1/1.gqf_Cba4Lk7JvqxD90-wyu2pLEhBqKxYyaUsTE-gJkRJ.p8FycgZ8T83yZu-LY0D20cWbUwCc9LGV61quEUESItk",
+        "https://80.img.avito.st/image/1/1.2JqQI7a4dHOmlPZ-rHDv94KDdnUugvZlpo92cSCKfHkm.TljVrUTC7cUzHugpYB0TwzCB6h2ifizd7a2xaWeI9RE",
+        "https://b20.img.avito.st/image/1/1.wETHhba4bK3xMu6gy6byKdUlbqt5JO678Slur3csZKdx.erRRlNvq7FnaDJlpz-MxyaD8jb1w5mQzORN0m_ZeuhM?cqp=2.YBwmTzZlbpX573VbvavQFFUVtmWJYKEGxBU3sPUqKDeblTtUL2CMETSjSJIL_7YdOSfKEVJ-1A=="
+      ],
+      "item_id": "8372561555",
+      "params": [
+        [
+          "Состояние",
+          "Новое"
+        ],
+        [
+          "Производитель",
+          "Apple"
+        ],
+        [
+          "Модель",
+          "iPhone 17 Pro"
+        ],
+        [
+          "Встроенная память",
+          "512 ГБ"
+        ],
+        [
+          "SIM-карты",
+          "Только eSIM"
+        ],
+        [
+          "Цвет",
+          "Оранжевый"
+        ],
+        [
+          "История смартфона",
+          "Неактивированный"
+        ],
+        [
+          "Страна происхождения товара",
+          "Россия"
+        ]
+      ],
+      "price_rub": 81990,
+      "published_at": "2026-10-31T10:01:49+00:00",
+      "seller_name": "AppleStore_MSK",
+      "sim": "Только eSIM",
+      "storage_gb": 512,
+      "title": "iPhone 17 Pro, 512 ГБ, eSIM"
+    }
+  },
+  "generated_at": 1793447638.9425159
 }
