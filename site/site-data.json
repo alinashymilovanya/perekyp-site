@@ -4,26 +4,35 @@
     "live": true,
     "monitoring_enabled": true,
     "source_failure_count": 0,
-    "heartbeat_at": 1793414051.0144784,
-    "heartbeat_iso": "2026-10-31T02:34:11.014478+00:00",
+    "heartbeat_at": 1793415062.8576894,
+    "heartbeat_iso": "2026-10-31T02:51:02.857689+00:00",
     "error": null,
-    "host": "run-pereekyp-6786fb9db7-l5bzx",
+    "host": "run-pereekyp-6749958fd7-drv6d",
     "diag": {
       "last_cycle": {
-        "at": "2026-10-31T02:20:55.141328+00:00",
-        "fetched": 23,
-        "new": 0,
+        "at": "2026-10-31T02:51:02.751071+00:00",
+        "fetched": 24,
+        "new": 1,
         "skipped_low_margin": 0,
-        "notified": 0,
-        "best_margin_rub": null
+        "notified": 1,
+        "best_margin_rub": 1500
       },
       "last_source_error": null,
-      "seen_total": 283,
+      "seen_total": 284,
       "pending_notifications": 0,
       "subscribers": 1
     }
   },
   "items": [
+    {
+      "item_id": "8517508502",
+      "notified_at": "2026-10-31T02:51:02.671374+00:00",
+      "title": "iPhone 15, 128 ГБ, 2 SIM",
+      "price_rub": 30600,
+      "market_price_rub": 34000,
+      "margin_rub": 1500,
+      "url": "https://www.avito.ru/moskva/telefony/iphone_15_128_gb_2_sim_8517508502"
+    },
     {
       "item_id": "8517748034",
       "notified_at": "2026-10-31T02:04:06.935810+00:00",
@@ -464,15 +473,6 @@
       "market_price_rub": 33500,
       "margin_rub": 2700,
       "url": "https://www.avito.ru/moskva/telefony/iphone_15_128_gb_sim_esim_8422324098"
-    },
-    {
-      "item_id": "8423823874",
-      "notified_at": "2026-10-30T19:23:48.873329+00:00",
-      "title": "iPhone 18 Pro, 512 ГБ, eSIM",
-      "price_rub": 133000,
-      "market_price_rub": 136000,
-      "margin_rub": 1100,
-      "url": "https://www.avito.ru/ramenskoe/telefony/iphone_18_pro_512_gb_esim_8423823874"
     }
   ]
 }
