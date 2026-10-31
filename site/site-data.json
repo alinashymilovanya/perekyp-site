@@ -4,10 +4,10 @@
     "live": true,
     "monitoring_enabled": true,
     "source_failure_count": 0,
-    "heartbeat_at": 1793446026.9968865,
-    "heartbeat_iso": "2026-10-31T11:27:06.996886+00:00",
+    "heartbeat_at": 1793446122.6263487,
+    "heartbeat_iso": "2026-10-31T11:28:42.626349+00:00",
     "error": null,
-    "host": "run-pereekyp-8f5898966-gkjb9",
+    "host": "run-pereekyp-5c669bf547-8dpv5",
     "diag": {
       "last_cycle": {
         "at": "2026-10-31T11:27:06.973436+00:00",
@@ -21,22 +21,28 @@
       },
       "last_source_error": null,
       "detail_probe": {
-        "item_id": "8401789880",
+        "item_id": "8489857845",
         "ok": null,
         "attempts": [
           {
             "name": "m_html",
-            "url": "https://m.avito.ru/moskva/telefony/iphone_17_pro_512_gb_sim_esim_8401789880",
-            "error": "HTTP 439 for https://m.avito.ru/moskva/telefony/iphone_17_pro_512_gb_sim_esim_8401789880 <!DOCTYPE html>\n<html lang=\"ru\">\n<head>\n    <meta charset=\"UTF-8\" />\n    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.",
+            "url": "https://m.avito.ru/moskva/telefony/iphone_15_pro_max_256_gb_sim_esim_8489857845",
+            "error": "HTTP 439 for https://m.avito.ru/moskva/telefony/iphone_15_pro_max_256_gb_sim_esim_8489857845 <!DOCTYPE html>\n<html lang=\"ru\">\n<head>\n    <meta charset=\"UTF-8\" />\n    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.",
             "rate_limited": true
           },
           {
             "name": "www_html",
-            "url": "https://www.avito.ru/moskva/telefony/iphone_17_pro_512_gb_sim_esim_8401789880",
-            "error": "HTTP 439 for https://www.avito.ru/moskva/telefony/iphone_17_pro_512_gb_sim_esim_8401789880 <!DOCTYPE html>\n<html lang=\"ru\">\n<head>\n    <meta charset=\"UTF-8\" />\n    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.",
+            "url": "https://www.avito.ru/moskva/telefony/iphone_15_pro_max_256_gb_sim_esim_8489857845",
+            "error": "HTTP 439 for https://www.avito.ru/moskva/telefony/iphone_15_pro_max_256_gb_sim_esim_8489857845 <!DOCTYPE html>\n<html lang=\"ru\">\n<head>\n    <meta charset=\"UTF-8\" />\n    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.",
             "rate_limited": true
           }
-        ]
+        ],
+        "cold": {
+          "name": "cold_html",
+          "url": "https://m.avito.ru/moskva/telefony/iphone_17_pro_512_gb_sim_esim_8372561555",
+          "error": "HTTP 439 for https://m.avito.ru/moskva/telefony/iphone_17_pro_512_gb_sim_esim_8372561555 <!DOCTYPE html>\n<html lang=\"ru\">\n<head>\n    <meta charset=\"UTF-8\" />\n    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.",
+          "rate_limited": true
+        }
       },
       "detail_cooldown_until": "1793446898.7270823",
       "details_cached": 0,
