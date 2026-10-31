@@ -7,6 +7,7 @@ from typing import Sequence
 from .analysis import analyze_listing
 from .avito_parser import ParsedListing
 from .formatter import ListingView, format_detail_addendum, format_listing_message
+from .item_detail import looks_like_block_page
 from .telegram_api import TelegramApiError
 from .telemetry import log_event
 
@@ -128,6 +129,11 @@ class Monitor:
             detail = self.store.load_item_detail(item_id)
             if detail is None:
                 # The home agent has not read this page yet: keep the request.
+                continue
+            if looks_like_block_page(detail.title, detail.description):
+                # A cached answer from the IP-check page is not data: wait for
+                # a real card instead of sending the block text to people.
+                log_event("detail_addendum_skipped_block", item_id=item_id)
                 continue
             extras = []
             if detail.color:

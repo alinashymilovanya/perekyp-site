@@ -299,6 +299,15 @@ class AddendumTests(unittest.TestCase):
         self.assertEqual(self.store.count_detail_requests(), 0)
         self.assertEqual(self.monitor.send_detail_addendums(), 0)
 
+    def test_addendum_skips_block_page_cache(self):
+        self.store.add_detail_request("9", "https://www.avito.ru/x", "t")
+        self.store.save_item_detail(
+            ItemDetail(item_id="9", title="Страница не\u00a0загрузилась из-за проблем с\u00a0IP")
+        )
+        self.assertEqual(self.monitor.send_detail_addendums(), 0)
+        self.assertEqual(self.sent, [])
+        self.assertEqual(self.store.count_detail_requests(), 1)
+
     def test_request_without_answer_stays(self):
         self.store.add_detail_request("1", "https://www.avito.ru/x", "t")
         self.assertEqual(self.monitor.send_detail_addendums(), 0)
