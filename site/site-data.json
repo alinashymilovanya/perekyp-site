@@ -4,20 +4,20 @@
     "live": true,
     "monitoring_enabled": true,
     "source_failure_count": 0,
-    "heartbeat_at": 1793461379.3431692,
-    "heartbeat_iso": "2026-10-31T15:42:59.343169+00:00",
+    "heartbeat_at": 1793461490.5397983,
+    "heartbeat_iso": "2026-10-31T15:44:50.539798+00:00",
     "error": null,
-    "host": "run-pereekyp-86f449d866-2596v",
+    "host": "run-pereekyp-dc686f686-xb5lc",
     "diag": {
       "last_cycle": {
-        "at": "2026-10-31T15:42:59.311934+00:00",
-        "fetched": 30,
-        "new": 30,
-        "skipped_low_margin": 17,
+        "at": "2026-10-31T15:44:50.520061+00:00",
+        "fetched": 29,
+        "new": 2,
+        "skipped_low_margin": 0,
         "skipped_after_detail": 0,
         "enriched": 0,
-        "notified": 10,
-        "best_margin_rub": 38090
+        "notified": 1,
+        "best_margin_rub": 21100
       },
       "last_source_error": null,
       "detail_probe": {
@@ -46,13 +46,22 @@
       },
       "detail_cooldown_until": "1793446898.7270823",
       "details_cached": 3,
-      "detail_requests": 27,
-      "seen_total": 581,
+      "detail_requests": 29,
+      "seen_total": 583,
       "pending_notifications": 0,
       "subscribers": 2
     }
   },
   "items": [
+    {
+      "item_id": "8521262044",
+      "notified_at": "2026-10-31T15:44:48.907630+00:00",
+      "title": "iPhone 16 Pro, 128 ГБ, SIM + eSIM",
+      "price_rub": 40000,
+      "market_price_rub": 63000,
+      "margin_rub": 21100,
+      "url": "https://www.avito.ru/egorevsk/telefony/iphone_16_pro_128_gb_sim_esim_8521262044"
+    },
     {
       "item_id": "8577235111",
       "notified_at": "2026-10-31T15:42:59.255011+00:00",
@@ -493,15 +502,6 @@
       "market_price_rub": 38000,
       "margin_rub": 1100,
       "url": "https://www.avito.ru/moskva/telefony/iphone_14_pro_256_gb_sim_esim_8372278868"
-    },
-    {
-      "item_id": "8400735736",
-      "notified_at": "2026-10-31T09:10:10.320990+00:00",
-      "title": "iPhone 16, 128 ГБ, SIM + eSIM",
-      "price_rub": 39000,
-      "market_price_rub": 43162,
-      "margin_rub": 2262,
-      "url": "https://www.avito.ru/moskva/telefony/iphone_16_128_gb_sim_esim_8400735736"
     }
   ]
 }
