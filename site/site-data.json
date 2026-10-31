@@ -4,20 +4,20 @@
     "live": true,
     "monitoring_enabled": true,
     "source_failure_count": 0,
-    "heartbeat_at": 1793467153.0130658,
-    "heartbeat_iso": "2026-10-31T17:19:13.013066+00:00",
+    "heartbeat_at": 1793467862.7958956,
+    "heartbeat_iso": "2026-10-31T17:31:02.795896+00:00",
     "error": null,
-    "host": "run-pereekyp-9c4b8dcdf-m49zw",
+    "host": "run-pereekyp-695fbb5b99-zq9hm",
     "diag": {
       "last_cycle": {
-        "at": "2026-10-31T17:19:11.581440+00:00",
+        "at": "2026-10-31T17:31:02.734368+00:00",
         "fetched": 30,
-        "new": 0,
+        "new": 1,
         "skipped_low_margin": 0,
         "skipped_after_detail": 0,
         "enriched": 0,
-        "notified": 0,
-        "best_margin_rub": null
+        "notified": 1,
+        "best_margin_rub": 3600
       },
       "last_source_error": null,
       "detail_probe": {
@@ -46,13 +46,22 @@
       },
       "detail_cooldown_until": "1793446898.7270823",
       "details_cached": 5,
-      "detail_requests": 38,
-      "seen_total": 617,
+      "detail_requests": 39,
+      "seen_total": 618,
       "pending_notifications": 0,
       "subscribers": 2
     }
   },
   "items": [
+    {
+      "item_id": "8445618128",
+      "notified_at": "2026-10-31T17:31:02.607924+00:00",
+      "title": "iPhone 16, 128 ГБ, 2 SIM",
+      "price_rub": 39500,
+      "market_price_rub": 45000,
+      "margin_rub": 3600,
+      "url": "https://www.avito.ru/mytischi/telefony/iphone_16_128_gb_2_sim_8445618128"
+    },
     {
       "item_id": "8372129809",
       "notified_at": "2026-10-31T16:48:39.380444+00:00",
@@ -493,15 +502,6 @@
       "market_price_rub": 195000,
       "margin_rub": 4100,
       "url": "https://www.avito.ru/moskva/telefony/iphone_18_pro_max_1_tb_sim_esim_8372012006"
-    },
-    {
-      "item_id": "8445189074",
-      "notified_at": "2026-10-31T10:12:02.348086+00:00",
-      "title": "iPhone 18 Pro Max, 512 ГБ, SIM + eSIM",
-      "price_rub": 143000,
-      "market_price_rub": 147900,
-      "margin_rub": 3000,
-      "url": "https://www.avito.ru/moskva/telefony/iphone_18_pro_max_512_gb_sim_esim_8445189074"
     }
   ]
 }
