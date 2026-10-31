@@ -1,0 +1,6 @@
+# Closed admin section: keep it out of search engines and out of caches.
+# This is a hint for crawlers and a caching guard only — the real protection is
+# the server-side password check in the logs API.
+Header set X-Robots-Tag "noindex, nofollow, noarchive, nosnippet"
+Header set Referrer-Policy "no-referrer"
+Header set Cache-Control "no-store, no-cache, must-revalidate, private, max-age=0"

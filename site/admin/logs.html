@@ -1,0 +1,590 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<meta name="referrer" content="no-referrer">
+<title>Журнал бота — закрытый раздел</title>
+<style>
+:root{
+  --bg:#060607;--panel:#0b0b0e;--panel2:#0d0d11;--line:rgba(255,255,255,.09);--line2:rgba(255,255,255,.055);
+  --txt:#ececf1;--mut:#9a9aa6;--mut2:#6f6f7b;
+  --accent:#ff4a76;--ok:#3ddc97;--warn:#ffc857;--err:#ff5f6d;--info:#7ab8ff;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:"Inter","Segoe UI",system-ui,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 18px 64px}
+.top{display:flex;flex-wrap:wrap;gap:14px;align-items:baseline;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:22px}
+.brand{font-family:var(--mono);font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--mut2)}
+h1{margin:8px 0 0;font-size:21px;font-weight:600;letter-spacing:-.01em}
+.top .meta{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--mut2);text-align:right;line-height:1.7}
+.panel{background:var(--panel);border:1px solid var(--line);padding:18px}
+.panel+.panel{margin-top:16px}
+.panel h2{margin:0 0 14px;font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut2);font-weight:400}
+label{display:block;font-family:var(--mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut2);margin-bottom:6px}
+input,select,button{font:inherit;color:inherit}
+input[type=password],input[type=text],input[type=search],input[type=datetime-local],select{
+  width:100%;background:var(--panel2);border:1px solid var(--line);padding:10px 11px;font-size:13px;outline:none}
+input:focus,select:focus{border-color:rgba(255,74,118,.5)}
+.row{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.row+.row{margin-top:12px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--accent);color:#180007;border:1px solid transparent;
+  padding:11px 16px;font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--txt);border-color:var(--line)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.hint{font-size:11.5px;line-height:1.6;color:var(--mut)}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:#bfbfca;padding:6px 10px;border:1px solid var(--line);cursor:pointer;background:transparent}
+.chip[aria-pressed=true]{border-color:rgba(196,18,69,.6);color:#ff8fab;background:rgba(196,18,69,.12)}
+.hidden{display:none!important}
+.state{padding:22px 4px;font-size:13px;color:var(--mut);line-height:1.6}
+.state strong{color:var(--txt);font-weight:600}
+.feed{width:100%;border-collapse:collapse}
+.feed th{font-family:var(--mono);font-size:7.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut2);font-weight:400;
+  text-align:left;padding:0 10px 10px;border-bottom:1px solid var(--line)}
+.feed td{padding:10px;border-bottom:1px solid var(--line2);vertical-align:top;font-size:12.5px}
+.feed tr:hover td{background:rgba(255,255,255,.015)}
+.tm{font-family:var(--mono);font-size:9px;color:var(--mut2);white-space:nowrap}
+.ev{font-family:var(--mono);font-size:10.5px;letter-spacing:.03em;color:#e7e7ee;word-break:break-word}
+.cmp{font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut2);margin-top:4px}
+.st{display:inline-block;font-family:var(--mono);font-size:7.5px;letter-spacing:.14em;text-transform:uppercase;padding:5px 8px;border:1px solid var(--line);white-space:nowrap}
+.st.success{color:var(--ok);border-color:rgba(61,220,151,.35)}
+.st.started{color:var(--info);border-color:rgba(122,184,255,.35)}
+.st.queued{color:var(--warn);border-color:rgba(255,200,87,.35)}
+.st.retried{color:var(--warn);border-color:rgba(255,200,87,.35)}
+.st.skipped{color:var(--mut);border-color:var(--line)}
+.st.failed{color:var(--err);border-color:rgba(255,95,109,.4)}
+.dt{font-size:11.5px;color:#b6b6c2;line-height:1.65;word-break:break-word}
+.dt .k{font-family:var(--mono);font-size:9px;color:var(--mut2);margin-right:4px}
+.ids{font-family:var(--mono);font-size:8px;letter-spacing:.06em;color:var(--mut2);margin-top:6px}
+.foot{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;margin-top:16px}
+.err{border-left:2px solid var(--err);background:rgba(255,95,109,.06);padding:12px 14px;font-size:12.5px;line-height:1.6;color:#ffd0d5;margin-top:14px}
+.ok{border-left:2px solid var(--ok);background:rgba(61,220,151,.06);padding:12px 14px;font-size:12.5px;line-height:1.6;color:#c6f7e2;margin-top:14px}
+.spin{display:inline-block;width:11px;height:11px;border:1px solid var(--mut2);border-top-color:var(--accent);border-radius:50%;animation:sp .8s linear infinite;vertical-align:-1px}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (max-width:720px){
+  .wrap{padding:18px 12px 48px}
+  .feed thead{display:none}
+  .feed td{display:block;border:0;padding:2px 0}
+  .feed tr{display:block;border-bottom:1px solid var(--line2);padding:12px 0}
+  .feed tr:hover td{background:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="brand">iphone monitor · admin</div>
+      <h1>Журнал бота</h1>
+    </div>
+    <div class="meta" id="topMeta">
+      закрытый раздел<br>
+      данные доступны только после входа
+    </div>
+  </header>
+
+  <section class="panel" id="loginPanel" aria-labelledby="loginTitle">
+    <h2 id="loginTitle">Вход</h2>
+    <p class="hint">
+      Пароль проверяется на сервере. Пароль и токен сессии не сохраняются в браузере:
+      токен живёт только в памяти этой страницы до обновления или выхода.
+    </p>
+    <form id="loginForm" autocomplete="off">
+      <div class="row">
+        <div>
+          <label for="password">Пароль</label>
+          <input id="password" type="password" name="password" autocomplete="current-password" required>
+        </div>
+        <div style="display:flex;align-items:flex-end">
+          <button class="btn" type="submit" id="loginBtn">Войти</button>
+        </div>
+      </div>
+    </form>
+    <div id="loginState" class="state"></div>
+  </section>
+
+  <section class="panel hidden" id="logsPanel" aria-labelledby="logsTitle">
+    <h2 id="logsTitle">Записи</h2>
+    <form id="filterForm">
+      <div class="row">
+        <div>
+          <label for="event">Тип события</label>
+          <input id="event" type="search" name="event" placeholder="например telegram или cycle" list="eventList">
+          <datalist id="eventList"></datalist>
+        </div>
+        <div>
+          <label for="component">Компонент</label>
+          <select id="component" name="component"><option value="">все</option></select>
+        </div>
+        <div>
+          <label for="since">С</label>
+          <input id="since" type="datetime-local" name="since">
+        </div>
+        <div>
+          <label for="until">По</label>
+          <input id="until" type="datetime-local" name="until">
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="q">Поиск по деталям</label>
+          <input id="q" type="search" name="q" placeholder="цена, chat_id, ошибка…">
+        </div>
+        <div>
+          <label for="limit">Записей за раз</label>
+          <select id="limit" name="limit">
+            <option value="25">25</option>
+            <option value="50" selected>50</option>
+            <option value="100">100</option>
+            <option value="200">200</option>
+          </select>
+        </div>
+      </div>
+      <div class="row" style="margin-top:14px">
+        <div style="grid-column:1/-1">
+          <label>Статус</label>
+          <div class="chips" id="statusChips"></div>
+        </div>
+      </div>
+      <div class="foot">
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn" type="submit">Применить</button>
+          <button class="btn ghost" type="button" id="resetBtn">Сбросить</button>
+          <button class="btn ghost" type="button" id="refreshBtn">Обновить</button>
+        </div>
+        <button class="btn ghost" type="button" id="logoutBtn">Выйти</button>
+      </div>
+    </form>
+    <div id="feedState" class="state"></div>
+    <div id="feedError" class="err hidden"></div>
+    <div id="feedWrap" class="hidden">
+      <table class="feed">
+        <thead>
+          <tr><th style="width:150px">Время</th><th style="width:250px">Действие</th><th style="width:96px">Статус</th><th>Детали</th></tr>
+        </thead>
+        <tbody id="feedBody"></tbody>
+      </table>
+      <div class="foot">
+        <span class="hint" id="feedSummary"></span>
+        <button class="btn ghost" type="button" id="moreBtn">Загрузить ещё</button>
+      </div>
+    </div>
+  </section>
+
+  <p class="hint" style="margin-top:22px">
+    Раздел закрыт серверной проверкой пароля. Прямой запрос к API без сессии
+    возвращает только отказ — сами записи журнала не отдаются.
+  </p>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // The API may live on another origin (the bot container), so the page URL can
+  // carry its address: /admin/logs.html?api=https://logs.example.com
+  var API_BASE = "";
+  try {
+    var qs = new URLSearchParams(window.location.search);
+    API_BASE = (qs.get("api") || "").trim().replace(/\/+$/, "");
+  } catch (err) {
+    API_BASE = "";
+  }
+
+  var STATUSES = ["started", "success", "failed", "skipped", "queued", "retried"];
+  var STATUS_LABELS = {
+    started: "запущен", success: "успех", failed: "ошибка",
+    skipped: "пропущено", queued: "в очереди", retried: "повтор"
+  };
+
+  // The session token is intentionally kept in this closure only: no
+  // localStorage, no sessionStorage, no cookie written by script.
+  var token = null;
+  var nextBefore = null;
+  var loading = false;
+  var activeStatuses = [];
+
+  var el = {
+    loginPanel: document.getElementById("loginPanel"),
+    loginForm: document.getElementById("loginForm"),
+    loginBtn: document.getElementById("loginBtn"),
+    password: document.getElementById("password"),
+    loginState: document.getElementById("loginState"),
+    logsPanel: document.getElementById("logsPanel"),
+    filterForm: document.getElementById("filterForm"),
+    event: document.getElementById("event"),
+    eventList: document.getElementById("eventList"),
+    component: document.getElementById("component"),
+    since: document.getElementById("since"),
+    until: document.getElementById("until"),
+    q: document.getElementById("q"),
+    limit: document.getElementById("limit"),
+    statusChips: document.getElementById("statusChips"),
+    feedState: document.getElementById("feedState"),
+    feedError: document.getElementById("feedError"),
+    feedWrap: document.getElementById("feedWrap"),
+    feedBody: document.getElementById("feedBody"),
+    feedSummary: document.getElementById("feedSummary"),
+    moreBtn: document.getElementById("moreBtn"),
+    refreshBtn: document.getElementById("refreshBtn"),
+    resetBtn: document.getElementById("resetBtn"),
+    logoutBtn: document.getElementById("logoutBtn"),
+    topMeta: document.getElementById("topMeta")
+  };
+
+  function setState(node, text, spin) {
+    node.textContent = "";
+    if (!text) { return; }
+    if (spin) {
+      var dot = document.createElement("span");
+      dot.className = "spin";
+      node.appendChild(dot);
+      node.appendChild(document.createTextNode(" "));
+    }
+    node.appendChild(document.createTextNode(text));
+  }
+
+  function showError(message) {
+    el.feedError.textContent = message || "";
+    el.feedError.classList.toggle("hidden", !message);
+  }
+
+  function api(path, options) {
+    options = options || {};
+    var headers = Object.assign({ "Accept": "application/json" }, options.headers || {});
+    if (token) { headers["Authorization"] = "Bearer " + token; }
+    return fetch(API_BASE + path, {
+      method: options.method || "GET",
+      body: options.body,
+      headers: headers,
+      credentials: "omit",
+      cache: "no-store",
+      mode: "cors"
+    }).then(function (response) {
+      return response.json().catch(function () { return null; }).then(function (data) {
+        return { status: response.status, ok: response.ok, data: data };
+      });
+    });
+  }
+
+  function describeNetworkError(err) {
+    var where = API_BASE ? API_BASE : "этого адреса";
+    return "Не удалось связаться с API журнала (" + where + "). " +
+      "Проверьте адрес в параметре ?api=, доступность контейнера и CORS для точного адреса страницы. " +
+      String(err && err.message ? err.message : err);
+  }
+
+  function formatTime(entry) {
+    if (entry.timestamp_iso) {
+      var parsed = new Date(entry.timestamp_iso);
+      if (!isNaN(parsed.getTime())) {
+        return parsed.toLocaleString("ru-RU", { hour12: false });
+      }
+    }
+    if (typeof entry.timestamp === "number") {
+      return new Date(entry.timestamp * 1000).toLocaleString("ru-RU", { hour12: false });
+    }
+    return "—";
+  }
+
+  function detailsText(details) {
+    if (!details || typeof details !== "object") { return ""; }
+    var parts = [];
+    Object.keys(details).sort().forEach(function (key) {
+      if (key === "legacy_record") { return; }
+      var value = details[key];
+      if (value === null || value === undefined || value === "") { return; }
+      if (typeof value === "object") {
+        try { value = JSON.stringify(value); } catch (err) { value = String(value); }
+      }
+      parts.push(key + ": " + value);
+    });
+    return parts.join(" · ");
+  }
+
+  function statusBadge(status) {
+    var badge = document.createElement("span");
+    var known = STATUSES.indexOf(status) !== -1 ? status : "skipped";
+    badge.className = "st " + known;
+    badge.textContent = STATUS_LABELS[known] || status;
+    badge.title = status;
+    return badge;
+  }
+
+  function addRow(entry) {
+    var tr = document.createElement("tr");
+
+    var tdTime = document.createElement("td");
+    tdTime.className = "tm";
+    tdTime.textContent = formatTime(entry);
+
+    var tdEvent = document.createElement("td");
+    var event = document.createElement("div");
+    event.className = "ev";
+    event.textContent = entry.event || "—";
+    tdEvent.appendChild(event);
+    if (entry.component) {
+      var component = document.createElement("div");
+      component.className = "cmp";
+      component.textContent = entry.component;
+      tdEvent.appendChild(component);
+    }
+
+    var tdStatus = document.createElement("td");
+    tdStatus.appendChild(statusBadge(entry.status));
+
+    var tdDetails = document.createElement("td");
+    var details = document.createElement("div");
+    details.className = "dt";
+    details.textContent = detailsText(entry.details) || "—";
+    tdDetails.appendChild(details);
+    var ids = [];
+    if (entry.listing_id) { ids.push("listing " + entry.listing_id); }
+    if (entry.cycle_id) { ids.push("cycle " + entry.cycle_id); }
+    if (ids.length) {
+      var idLine = document.createElement("div");
+      idLine.className = "ids";
+      idLine.textContent = ids.join(" · ");
+      tdDetails.appendChild(idLine);
+    }
+
+    tr.appendChild(tdTime);
+    tr.appendChild(tdEvent);
+    tr.appendChild(tdStatus);
+    tr.appendChild(tdDetails);
+    el.feedBody.appendChild(tr);
+  }
+
+  function updateFacets(facets) {
+    if (!facets) { return; }
+    if (Array.isArray(facets.events)) {
+      el.eventList.textContent = "";
+      facets.events.forEach(function (name) {
+        var option = document.createElement("option");
+        option.value = name;
+        el.eventList.appendChild(option);
+      });
+    }
+    if (Array.isArray(facets.components)) {
+      var current = el.component.value;
+      el.component.textContent = "";
+      var all = document.createElement("option");
+      all.value = "";
+      all.textContent = "все";
+      el.component.appendChild(all);
+      facets.components.forEach(function (name) {
+        var option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        el.component.appendChild(option);
+      });
+      el.component.value = current;
+    }
+  }
+
+  function buildQuery() {
+    var query = new URLSearchParams();
+    var limit = el.limit.value || "50";
+    query.set("limit", limit);
+    if (nextBefore !== null) { query.set("before", String(nextBefore)); }
+    var event = el.event.value.trim();
+    if (event) { query.set("event", event); }
+    if (el.component.value) { query.set("component", el.component.value); }
+    var search = el.q.value.trim();
+    if (search) { query.set("q", search); }
+    if (el.since.value) {
+      var since = new Date(el.since.value);
+      if (!isNaN(since.getTime())) { query.set("since", since.toISOString()); }
+    }
+    if (el.until.value) {
+      var until = new Date(el.until.value);
+      if (!isNaN(until.getTime())) { query.set("until", until.toISOString()); }
+    }
+    if (activeStatuses.length) { query.set("status", activeStatuses.join(",")); }
+    return query.toString();
+  }
+
+  function sessionExpired(message) {
+    token = null;
+    el.logsPanel.classList.add("hidden");
+    el.loginPanel.classList.remove("hidden");
+    el.password.value = "";
+    el.password.focus();
+    setState(el.loginState, message || "Сессия истекла. Войдите снова.", false);
+    el.topMeta.textContent = "закрытый раздел · сессия завершена";
+  }
+
+  function loadPage(append) {
+    if (loading) { return; }
+    loading = true;
+    showError("");
+    if (!append) {
+      el.feedBody.textContent = "";
+      nextBefore = null;
+      setState(el.feedState, "Загружаем записи…", true);
+      el.feedState.classList.remove("hidden");
+      el.feedWrap.classList.add("hidden");
+    } else {
+      setState(el.feedState, "Загружаем ещё…", true);
+      el.feedState.classList.remove("hidden");
+    }
+    el.moreBtn.disabled = true;
+    api("/api/admin/logs?" + buildQuery()).then(function (result) {
+      loading = false;
+      el.moreBtn.disabled = false;
+      if (result.status === 401) {
+        setState(el.feedState, "", false);
+        sessionExpired("Сессия истекла или недействительна. Войдите снова.");
+        return;
+      }
+      if (result.status === 503) {
+        setState(el.feedState, "", false);
+        showError("Раздел логов не настроен на сервере: задайте ADMIN_LOGS_PASSWORD и ADMIN_LOGS_SESSION_SECRET.");
+        el.feedWrap.classList.add("hidden");
+        return;
+      }
+      if (!result.ok || !result.data) {
+        setState(el.feedState, "", false);
+        showError("API ответил ошибкой " + result.status + ". Попробуйте обновить страницу.");
+        return;
+      }
+      var entries = result.data.entries || [];
+      setState(el.feedState, "", false);
+      el.feedState.classList.add("hidden");
+      updateFacets(result.data.facets);
+      entries.forEach(addRow);
+      nextBefore = result.data.next_before;
+      var hasRows = el.feedBody.children.length > 0;
+      el.feedWrap.classList.toggle("hidden", !hasRows);
+      el.moreBtn.classList.toggle("hidden", !result.data.has_more);
+      if (!hasRows) {
+        setState(el.feedState, "Записей по этим фильтрам нет. Измените условия или загрузите журнал позже.", false);
+        el.feedState.classList.remove("hidden");
+      }
+      var window_ = result.data.window || {};
+      el.feedSummary.textContent =
+        (result.data.count || 0) + " записей на странице · в файлах: " +
+        (window_.files || []).join(", ") + " · прочитано " +
+        Math.round((window_.bytes_read || 0) / 1024) + " КБ" +
+        (window_.truncated ? " · показаны не все строки" : "");
+    }).catch(function (err) {
+      loading = false;
+      el.moreBtn.disabled = false;
+      setState(el.feedState, "", false);
+      showError(describeNetworkError(err));
+    });
+  }
+
+  function login(password) {
+    el.loginBtn.disabled = true;
+    setState(el.loginState, "Проверяем пароль…", true);
+    api("/api/admin/logs/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: password })
+    }).then(function (result) {
+      el.loginBtn.disabled = false;
+      if (result.status === 200 && result.data && result.data.token) {
+        token = result.data.token;
+        el.loginPanel.classList.add("hidden");
+        el.logsPanel.classList.remove("hidden");
+        el.password.value = "";
+        setState(el.loginState, "", false);
+        el.topMeta.textContent = "закрытый раздел · сессия активна";
+        loadPage(false);
+        return;
+      }
+      if (result.status === 429) {
+        var retry = result.data && result.data.retry_in ? Math.ceil(result.data.retry_in) : 60;
+        setState(el.loginState, "Слишком много попыток. Повторите примерно через " + retry + " с.", false);
+        return;
+      }
+      if (result.status === 503) {
+        setState(el.loginState, "Раздел логов не настроен на сервере: нужны ADMIN_LOGS_PASSWORD и ADMIN_LOGS_SESSION_SECRET.", false);
+        return;
+      }
+      setState(el.loginState, "Неверный пароль.", false);
+      el.password.value = "";
+      el.password.focus();
+    }).catch(function (err) {
+      el.loginBtn.disabled = false;
+      setState(el.loginState, describeNetworkError(err), false);
+    });
+  }
+
+  function logout() {
+    var done = function () {
+      token = null;
+      el.feedBody.textContent = "";
+      el.logsPanel.classList.add("hidden");
+      el.loginPanel.classList.remove("hidden");
+      el.password.focus();
+      setState(el.loginState, "Вы вышли из раздела.", false);
+      el.topMeta.textContent = "закрытый раздел · данные доступны только после входа";
+    };
+    if (!token) { done(); return; }
+    api("/api/admin/logs/logout", { method: "POST" }).then(done, done);
+  }
+
+  function renderStatusChips() {
+    el.statusChips.textContent = "";
+    STATUSES.forEach(function (name) {
+      var chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "chip";
+      chip.textContent = STATUS_LABELS[name];
+      chip.setAttribute("aria-pressed", activeStatuses.indexOf(name) !== -1 ? "true" : "false");
+      chip.addEventListener("click", function () {
+        var index = activeStatuses.indexOf(name);
+        if (index === -1) { activeStatuses.push(name); } else { activeStatuses.splice(index, 1); }
+        chip.setAttribute("aria-pressed", activeStatuses.indexOf(name) !== -1 ? "true" : "false");
+        loadPage(false);
+      });
+      el.statusChips.appendChild(chip);
+    });
+  }
+
+  el.loginForm.addEventListener("submit", function (event) {
+    event.preventDefault();
+    var password = el.password.value;
+    if (!password) { return; }
+    login(password);
+  });
+
+  el.filterForm.addEventListener("submit", function (event) {
+    event.preventDefault();
+    loadPage(false);
+  });
+
+  el.resetBtn.addEventListener("click", function () {
+    el.event.value = "";
+    el.component.value = "";
+    el.since.value = "";
+    el.until.value = "";
+    el.q.value = "";
+    activeStatuses = [];
+    renderStatusChips();
+    loadPage(false);
+  });
+
+  el.refreshBtn.addEventListener("click", function () { loadPage(false); });
+  el.moreBtn.addEventListener("click", function () { loadPage(true); });
+  el.logoutBtn.addEventListener("click", logout);
+
+  renderStatusChips();
+  setState(el.feedState, "", false);
+
+  // A failed health probe only tells the visitor that the API is unreachable;
+  // it never reveals any log content.
+  if (API_BASE !== "" && API_BASE !== window.location.origin) {
+    el.topMeta.textContent = "закрытый раздел · API " + API_BASE;
+  }
+})();
+</script>
+</body>
+</html>
