@@ -9,6 +9,7 @@ publishes site/detail-results.json, and the bot folds the answer back in.
 import json
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 
 from .github_publish import GitHubPublishError, publish_snapshot
@@ -18,6 +19,7 @@ from .telemetry import log_event
 REQUESTS_PATH = "site/detail-requests.json"
 RESULTS_PATH = "site/detail-results.json"
 RAW_ROOT = "https://raw.githubusercontent.com"
+API_ROOT = "https://api.github.com"
 AGENT_ONLINE_SECONDS = 900.0
 RESULTS_TTL_SECONDS = 15.0
 
@@ -28,11 +30,21 @@ def raw_url(repo: str, branch: str, path: str, *, stamp: float | None = None) ->
     return f"{RAW_ROOT}/{repo}/{branch}/{path.lstrip('/')}{suffix}"
 
 
-def fetch_json(url: str, *, timeout: float = 20.0):
+def contents_url(repo: str, path: str, branch: str) -> str:
+    """API address for a file: the raw CDN serves stale copies for minutes."""
+    ref = urllib.parse.quote(branch or "master", safe="")
+    return f"{API_ROOT}/repos/{repo}/contents/{path.lstrip('/')}?ref={ref}"
+
+
+def fetch_json(url: str, *, token: str = "", timeout: float = 20.0):
     """Read a JSON document, returning None when the file does not exist yet."""
-    request = urllib.request.Request(
-        url, headers={"User-Agent": "iphone-monitor", "Accept": "application/json"}
-    )
+    headers = {
+        "User-Agent": "iphone-monitor",
+        "Accept": "application/vnd.github.raw",
+    }
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    request = urllib.request.Request(url, headers=headers)
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:
             raw = response.read()
@@ -88,7 +100,9 @@ class DetailRelay:
         if not force and self._results and now - self._results_at < self.results_ttl:
             return self._results
         try:
-            payload = self._fetch(raw_url(self.repo, self.branch, RESULTS_PATH, stamp=now))
+            payload = self._fetch(
+                contents_url(self.repo, RESULTS_PATH, self.branch), token=self.token
+            )
         except (urllib.error.URLError, OSError, ValueError) as error:
             log_event("detail_results_unavailable", error=str(error)[:200])
             return self._results

@@ -88,6 +88,7 @@ def build_site_data(
                 "detail_probe": _metadata_json(store, PROBE_METADATA_KEY),
                 "detail_cooldown_until": _metadata_value(store, COOLDOWN_METADATA_KEY),
                 "details_cached": _store_count(store, "count_item_details"),
+                "detail_requests": _store_count(store, "count_detail_requests"),
                 "seen_total": _store_count(store, "count_seen"),
                 "pending_notifications": _store_count(
                     store, "count_pending_notifications"

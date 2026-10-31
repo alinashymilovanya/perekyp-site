@@ -2,7 +2,13 @@ import json
 import unittest
 
 from iphone_monitor.avito_parser import ParsedListing
-from iphone_monitor.detail_relay import DetailRelay, RemoteEnricher, dump, raw_url
+from iphone_monitor.detail_relay import (
+    DetailRelay,
+    RemoteEnricher,
+    contents_url,
+    dump,
+    raw_url,
+)
 from iphone_monitor.formatter import format_detail_addendum
 from iphone_monitor.item_detail import ItemDetail, apply_detail
 from iphone_monitor.monitor import Monitor
@@ -48,14 +54,16 @@ def listing(**overrides) -> ParsedListing:
 
 
 class FakeFetch:
-    """Answers raw.githubusercontent.com requests from a dict of paths."""
+    """Answers GitHub file requests from a dict of paths."""
 
     def __init__(self, files=None):
         self.files = dict(files or {})
         self.urls = []
+        self.tokens = []
 
-    def __call__(self, url, **_kwargs):
+    def __call__(self, url, **kwargs):
         self.urls.append(url)
+        self.tokens.append(kwargs.get("token"))
         for path, payload in self.files.items():
             if url.endswith(path) or path in url:
                 return payload
@@ -102,6 +110,21 @@ class RelayTests(unittest.TestCase):
             raw_url("u/r", "master", "site/x.json", stamp=12.7),
             "https://raw.githubusercontent.com/u/r/master/site/x.json?v=12",
         )
+
+    def test_contents_url_targets_the_api(self):
+        self.assertEqual(
+            contents_url("u/r", "/site/x.json", "master"),
+            "https://api.github.com/repos/u/r/contents/site/x.json?ref=master",
+        )
+
+    def test_results_are_read_through_the_api_with_the_token(self):
+        relay = self.make_relay({"site/detail-results.json": {"generated_at": 1.0, "details": {}}})
+        relay.results(force=True)
+        self.assertEqual(
+            self.fetch.urls[0],
+            "https://api.github.com/repos/user/repo/contents/site/detail-results.json?ref=master",
+        )
+        self.assertEqual(self.fetch.tokens[0], "t")
 
     def test_publish_requests_only_when_set_changes(self):
         relay = self.make_relay()

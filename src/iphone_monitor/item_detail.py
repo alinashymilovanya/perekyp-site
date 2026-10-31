@@ -61,9 +61,16 @@ _IMAGE_SIZE = re.compile(r"^(\d+)x\d+$")
 class ItemDetailError(RuntimeError):
     """The listing page could not be read."""
 
-    def __init__(self, message: str, *, rate_limited: bool = False):
+    def __init__(
+        self,
+        message: str,
+        *,
+        rate_limited: bool = False,
+        blocked: bool = False,
+    ):
         super().__init__(message)
         self.rate_limited = rate_limited
+        self.blocked = blocked
 
 
 @dataclass(frozen=True)

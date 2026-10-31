@@ -14,13 +14,14 @@ if str(ROOT / "src") not in sys.path:
     sys.path.insert(0, str(ROOT / "src"))
 
 from iphone_monitor.avito_parser import ParsedListing  # noqa: E402
+from iphone_monitor.browser_detail import BrowserDetailReader  # noqa: E402
 from iphone_monitor.config import load_settings  # noqa: E402
 from iphone_monitor.detail_relay import (  # noqa: E402
     REQUESTS_PATH,
     RESULTS_PATH,
+    contents_url,
     dump,
     fetch_json,
-    raw_url,
 )
 from iphone_monitor.github_publish import GitHubPublishError, publish_snapshot  # noqa: E402
 from iphone_monitor.instance_lock import InstanceLock  # noqa: E402
@@ -31,6 +32,7 @@ POLL_SECONDS = 20.0
 PAGE_PAUSE_SECONDS = 12.0
 HEARTBEAT_SECONDS = 300.0
 BLOCK_SLEEP_SECONDS = 600.0
+BLOCK_SLEEP_MAX_SECONDS = 10_800.0
 MAX_PAGES_PER_ROUND = 8
 MAX_STORED_DETAILS = 400
 
@@ -52,17 +54,17 @@ def _stub(item_id: str, url: str, title: str) -> ParsedListing:
     )
 
 
-def _load_published(fetch, repo: str, branch: str) -> dict:
+def _load_published(fetch, repo: str, branch: str, token: str = "") -> dict:
     try:
-        payload = fetch(raw_url(repo, branch, RESULTS_PATH, stamp=time.time()))
+        payload = fetch(contents_url(repo, RESULTS_PATH, branch), token=token)
     except (OSError, ValueError):
         return {}
     return payload if isinstance(payload, dict) else {}
 
 
-def _read_requests(fetch, repo: str, branch: str) -> list[dict]:
+def _read_requests(fetch, repo: str, branch: str, token: str = "") -> list[dict]:
     try:
-        payload = fetch(raw_url(repo, branch, REQUESTS_PATH, stamp=time.time()))
+        payload = fetch(contents_url(repo, REQUESTS_PATH, branch), token=token)
     except (OSError, ValueError) as error:
         log_event("detail_agent_requests_unavailable", error=str(error)[:200])
         return []
@@ -70,6 +72,18 @@ def _read_requests(fetch, repo: str, branch: str) -> list[dict]:
     if not isinstance(items, list):
         return []
     return [item for item in items if isinstance(item, dict) and item.get("item_id")]
+
+
+def build_reader(settings):
+    """Chrome reads the card; plain HTTP stays as the fallback."""
+    exe = str(getattr(settings, "browser_act_path", "") or "")
+    if exe and Path(exe).exists():
+        return BrowserDetailReader(
+            exe,
+            str(getattr(settings, "avito_session_name", "") or "avito-check"),
+            str(getattr(settings, "avito_browser_id", "") or ""),
+        )
+    return load_detail
 
 
 def _trim(details: dict) -> dict:
@@ -103,11 +117,14 @@ def _publish(state, settings, *, message: str) -> bool:
     return True
 
 
-def run_round(state, settings, fetch, *, sleep=time.sleep) -> int:
+def run_round(state, settings, fetch, *, sleep=time.sleep, reader=None) -> int:
     """Read up to MAX_PAGES_PER_ROUND requested pages; return how many were read."""
+    reader = reader or load_detail
     if state.get("blocked_until", 0) > time.time():
         return 0
-    queue = _read_requests(fetch, settings.github_repo, settings.github_branch)
+    queue = _read_requests(
+        fetch, settings.github_repo, settings.github_branch, settings.github_token
+    )
     if not queue:
         return 0
     fetched = 0
@@ -122,22 +139,37 @@ def run_round(state, settings, fetch, *, sleep=time.sleep) -> int:
             continue
         listing = _stub(item_id, url, str(item.get("title") or ""))
         try:
-            detail = load_detail(listing)
+            detail = reader(listing)
         except ItemDetailError as error:
+            blocked = bool(error.rate_limited or getattr(error, "blocked", False))
             log_event(
                 "detail_agent_failed",
                 item_id=item_id,
                 rate_limited=bool(error.rate_limited),
+                blocked=bool(getattr(error, "blocked", False)),
                 error=str(error)[:200],
             )
-            if error.rate_limited:
-                state["blocked_until"] = time.time() + BLOCK_SLEEP_SECONDS
+            if blocked:
+                # Each further block means the address is still banned: back off
+                # harder instead of knocking every ten minutes.
+                state["blocks"] = int(state.get("blocks", 0)) + 1
+                delay = min(
+                    BLOCK_SLEEP_SECONDS * (2 ** (state["blocks"] - 1)),
+                    BLOCK_SLEEP_MAX_SECONDS,
+                )
+                state["blocked_until"] = time.time() + delay
+                log_event(
+                    "detail_agent_blocked",
+                    blocks=state["blocks"],
+                    sleep_seconds=delay,
+                )
                 return fetched
             continue
         except Exception as error:  # one bad page must not stop the agent
             log_event("detail_agent_crashed", item_id=item_id, error=str(error)[:200])
             continue
         state["details"][item_id] = detail.as_payload()
+        state["blocks"] = 0
         fetched += 1
         log_event(
             "detail_agent_fetched",
@@ -159,17 +191,31 @@ def main() -> None:
     if not settings.github_token or "/" not in settings.github_repo:
         log_event("detail_agent_disabled", reason="нет GITHUB_TOKEN или GITHUB_REPO")
         return
-    published = _load_published(fetch_json, settings.github_repo, settings.github_branch)
+    published = _load_published(
+        fetch_json, settings.github_repo, settings.github_branch, settings.github_token
+    )
     details = published.get("details") if isinstance(published.get("details"), dict) else {}
     state = {
         "details": dict(details),
         "published_at": float(published.get("generated_at") or 0),
         "blocked_until": 0.0,
+        "blocks": 0,
     }
-    log_event("detail_agent_started", repo=settings.github_repo, known_details=len(state["details"]))
+    reader = build_reader(settings)
+    log_event(
+        "detail_agent_started",
+        repo=settings.github_repo,
+        known_details=len(state["details"]),
+        reader=type(reader).__name__,
+    )
     while True:
+        log_event(
+            "detail_agent_tick",
+            known=len(state["details"]),
+            blocked_for=round(max(0.0, state.get("blocked_until", 0) - time.time())),
+        )
         try:
-            fetched = run_round(state, settings, fetch_json)
+            fetched = run_round(state, settings, fetch_json, reader=reader)
         except Exception as error:  # the agent must survive anything
             log_event("detail_agent_round_failed", error=str(error)[:300])
             fetched = 0
