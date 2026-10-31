@@ -516,11 +516,17 @@ if (q.get('id')) {
     chip.addEventListener('click', function(){
       chips.forEach(function(c){ c.classList.toggle('on', c === chip); });
       var v = chip.getAttribute('data-v');
+      var n = 0;
       rows.forEach(function(r){
         var cell = r.querySelector('.deliv');
         var has = cell ? cell.textContent.trim() === 'Есть' : false;
         var show = v === 'all' || (v === 'yes' && has) || (v === 'no' && !has);
         r.style.display = show ? '' : 'none';
+        if (show) {
+          n += 1;
+          var num = r.querySelector('i');
+          if (num) num.textContent = (n < 10 ? '0' : '') + n;
+        }
       });
     });
   });
