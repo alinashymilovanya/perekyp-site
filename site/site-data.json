@@ -4,13 +4,13 @@
     "live": true,
     "monitoring_enabled": true,
     "source_failure_count": 0,
-    "heartbeat_at": 1793444531.329592,
-    "heartbeat_iso": "2026-10-31T11:02:11.329592+00:00",
+    "heartbeat_at": 1793445257.7937534,
+    "heartbeat_iso": "2026-10-31T11:14:17.793753+00:00",
     "error": null,
-    "host": "run-pereekyp-859f7f94dd-bf6wp",
+    "host": "run-pereekyp-7b7d7dbbcd-wz5cv",
     "diag": {
       "last_cycle": {
-        "at": "2026-10-31T10:56:29.497185+00:00",
+        "at": "2026-10-31T11:04:42.724426+00:00",
         "fetched": 37,
         "new": 0,
         "skipped_low_margin": 0,
@@ -19,47 +19,25 @@
       },
       "last_source_error": null,
       "detail_probe": {
-        "item_id": "8372561555",
+        "item_id": "8401789880",
         "ok": null,
         "attempts": [
           {
-            "name": "web1_item",
-            "url": "https://www.avito.ru/web/1/item/8372561555/",
-            "status": 404,
-            "content_type": "application/octet-stream",
-            "length": 54,
-            "snippet": "{\"error\": {\"code\": 404, \"message\": \"route not found\"}}",
-            "has_description": false
+            "name": "m_html",
+            "url": "https://m.avito.ru/moskva/telefony/iphone_17_pro_512_gb_sim_esim_8401789880",
+            "error": "HTTP 439 for https://m.avito.ru/moskva/telefony/iphone_17_pro_512_gb_sim_esim_8401789880 <!DOCTYPE html>\n<html lang=\"ru\">\n<head>\n    <meta charset=\"UTF-8\" />\n    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.",
+            "rate_limited": true
           },
           {
-            "name": "web1_items",
-            "url": "https://www.avito.ru/web/1/items/8372561555/",
-            "status": 404,
-            "content_type": "application/json; charset=utf-8",
-            "length": 57,
-            "snippet": "{\"status\":{\"code\":404,\"header\":\"HTTP/1.1 404 Not found\"}}",
-            "has_description": false
-          },
-          {
-            "name": "html_page",
-            "url": "https://www.avito.ruhttps://www.avito.ru/moskva/telefony/iphone_17_pro_512_gb_esim_8372561555",
-            "status": -1,
-            "content_type": "",
-            "length": 52,
-            "snippet": "<urlopen error [Errno -2] Name or service not known>",
-            "has_description": false
-          },
-          {
-            "name": "mobile_api",
-            "url": "https://m.avito.ru/api/9/items?key=af0deccbgcgidddjgnvljtntccdduijhdinfgjgfjir&ids=8372561555",
-            "status": 403,
-            "content_type": "text/html; charset=utf-8",
-            "length": 1976,
-            "snippet": "<!DOCTYPE html> <html lang=\"ru\"> <head>     <meta charset=\"utf-8\">     <meta name=\"HandheldFriendly\" content=\"True\">     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, minimum-sca",
-            "has_description": false
+            "name": "www_html",
+            "url": "https://www.avito.ru/moskva/telefony/iphone_17_pro_512_gb_sim_esim_8401789880",
+            "error": "HTTP 439 for https://www.avito.ru/moskva/telefony/iphone_17_pro_512_gb_sim_esim_8401789880 <!DOCTYPE html>\n<html lang=\"ru\">\n<head>\n    <meta charset=\"UTF-8\" />\n    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.",
+            "rate_limited": true
           }
         ]
       },
+      "detail_cooldown_until": null,
+      "details_cached": 0,
       "seen_total": 441,
       "pending_notifications": 0,
       "subscribers": 2
