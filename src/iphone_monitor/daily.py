@@ -61,7 +61,7 @@ def format_daily_summary(
 def send_daily_summary_if_due(
     store,
     telegram,
-    chat_id: str,
+    chat_ids,
     *,
     now: datetime,
     timezone_name: str,
@@ -77,6 +77,8 @@ def send_daily_summary_if_due(
         store.count_notified_since(start_at.isoformat()),
         store.top_notified_since(start_at.isoformat()),
     )
-    telegram.send_message(chat_id, message)
+    recipients = [chat_ids] if isinstance(chat_ids, str) else list(chat_ids)
+    for chat_id in recipients:
+        telegram.send_message(chat_id, message)
     store.set_metadata("daily_summary_date", local_date)
     return True

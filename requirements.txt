@@ -1,1 +1,7 @@
-# Telegram integration and HTTP client will be added after the data-source check.
+# Runtime dependencies. The core bot still runs on the standard library only;
+# these packages add the Telegram transports that the network here requires.
+Telethon==1.45.0
+python-socks==3.2.0
+tzdata==2026.6
+pyaes==1.6.1
+rsa==4.9.1

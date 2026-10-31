@@ -38,11 +38,15 @@ class JsonApiSource:
         self,
         url: str,
         token: str,
+        max_listings: int = 50,
         fetch_json: Callable[[str, str], dict | list] | None = None,
     ):
         _validate_url(url)
         self._url = url
         self._token = token
+        if max_listings < 1:
+            raise ValueError("max_listings must be positive")
+        self._max_listings = max_listings
         self._fetch_json = fetch_json or _fetch_json
 
     def fetch(self) -> tuple[ParsedListing, ...]:
@@ -51,7 +55,7 @@ class JsonApiSource:
             items = payload.get("items") if isinstance(payload, dict) else payload
             if not isinstance(items, list):
                 raise ValueError("Provider payload must contain an items array")
-            return tuple(parse_card(item) for item in items)
+            return tuple(parse_card(item) for item in items[: self._max_listings])
         except (ListingsSourceError, ValueError, TypeError, KeyError) as exc:
             if isinstance(exc, ListingsSourceError):
                 raise

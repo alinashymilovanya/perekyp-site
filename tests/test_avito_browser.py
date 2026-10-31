@@ -1,7 +1,9 @@
 import json
+import subprocess
 import unittest
+from unittest.mock import patch
 
-from iphone_monitor.avito_browser import AvitoBrowserSource, parse_cards_json
+from iphone_monitor.avito_browser import BrowserActError, AvitoBrowserSource, parse_cards_json
 
 
 class FakeRunner:
@@ -65,3 +67,48 @@ class AvitoBrowserTests(unittest.TestCase):
         self.assertIn(("navigate", "https://www.avito.ru/search"), runner.calls)
         self.assertIn(("click", "36"), runner.calls)
         self.assertIn(("click", "288"), runner.calls)
+
+    def test_fetch_opens_configured_browser_session(self):
+        raw = json.dumps([], ensure_ascii=False)
+        runner = FakeRunner(raw)
+        source = AvitoBrowserSource(
+            browser_act_path="browser-act",
+            browser_id="chrome_local_1",
+            session_name="avito-check",
+            search_url="https://www.avito.ru/search",
+            runner=runner,
+        )
+
+        source.fetch()
+
+        self.assertIn(
+            ("browser", "open", "chrome_local_1", "https://www.avito.ru/search"),
+            runner.calls,
+        )
+
+    def test_fetch_limits_extraction_to_newest_cards(self):
+        runner = FakeRunner(json.dumps([], ensure_ascii=False))
+        source = AvitoBrowserSource(
+            browser_act_path="browser-act",
+            session_name="avito-check",
+            max_listings=12,
+            runner=runner,
+        )
+
+        source.fetch()
+
+        eval_call = next(call for call in runner.calls if call[0] == "eval")
+        self.assertIn("slice(0, 12)", eval_call[1])
+
+    def test_command_timeout_becomes_recoverable_source_error(self):
+        source = AvitoBrowserSource(
+            browser_act_path="browser-act",
+            session_name="avito-check",
+        )
+
+        with patch(
+            "iphone_monitor.avito_browser.subprocess.run",
+            side_effect=subprocess.TimeoutExpired("browser-act", 45),
+        ):
+            with self.assertRaises(BrowserActError):
+                source._run_command(["state"])

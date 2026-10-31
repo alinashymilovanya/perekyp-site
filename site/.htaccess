@@ -1,5 +1,6 @@
 <IfModule mod_headers.c>
-  <FilesMatch "\.(css|js|svg|json)$">
+  <FilesMatch "\.(html|css|js|svg|json)$">
     Header set Cache-Control "no-cache, must-revalidate"
+    Header unset Expires
   </FilesMatch>
 </IfModule>

@@ -37,3 +37,26 @@ class AnalysisTests(unittest.TestCase):
 
         self.assertIsNone(result.market_price_rub)
         self.assertIsNone(result.margin_rub)
+
+    def test_two_consistent_prices_are_enough_for_a_rough_market(self):
+        listing = parse_card(self._card())
+
+        result = analyze_listing(listing, [50_000, 52_000])
+
+        self.assertEqual(result.market_price_rub, 51_000)
+
+    def test_two_scattered_prices_are_not_a_market(self):
+        listing = parse_card(self._card())
+
+        result = analyze_listing(listing, [30_000, 60_000])
+
+        self.assertIsNone(result.market_price_rub)
+
+    def _card(self) -> dict:
+        return {
+            "id": "i123",
+            "title": "iPhone 13 128 ГБ",
+            "url": "https://www.avito.ru/item/123",
+            "text": "iPhone 13 128 ГБ\n20 000 ₽",
+            "images": [],
+        }
