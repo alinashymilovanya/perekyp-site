@@ -4,13 +4,13 @@
     "live": true,
     "monitoring_enabled": true,
     "source_failure_count": 0,
-    "heartbeat_at": 1793556071.9694219,
-    "heartbeat_iso": "2026-11-01T18:01:11.969422+00:00",
+    "heartbeat_at": 1793557875.4542994,
+    "heartbeat_iso": "2026-11-01T18:31:15.454299+00:00",
     "error": null,
-    "host": "run-pereekyp-77c877bf85-j47dm",
+    "host": "run-pereekyp-56d664b7b5-8w255",
     "diag": {
       "last_cycle": {
-        "at": "2026-11-01T17:53:43.691556+00:00",
+        "at": "2026-11-01T18:17:49.760993+00:00",
         "fetched": 30,
         "new": 0,
         "skipped_low_margin": 0,
