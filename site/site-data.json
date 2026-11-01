@@ -4,20 +4,20 @@
     "live": true,
     "monitoring_enabled": true,
     "source_failure_count": 0,
-    "heartbeat_at": 1793538358.8169553,
-    "heartbeat_iso": "2026-11-01T13:05:58.816955+00:00",
+    "heartbeat_at": 1793539484.9153082,
+    "heartbeat_iso": "2026-11-01T13:24:44.915308+00:00",
     "error": null,
-    "host": "run-pereekyp-7c97b857c8-pt94x",
+    "host": "run-pereekyp-5bddd557b-tlptr",
     "diag": {
       "last_cycle": {
-        "at": "2026-11-01T13:05:56.934948+00:00",
-        "fetched": 39,
-        "new": 0,
-        "skipped_low_margin": 0,
+        "at": "2026-11-01T13:24:44.697139+00:00",
+        "fetched": 42,
+        "new": 3,
+        "skipped_low_margin": 2,
         "skipped_after_detail": 0,
         "enriched": 0,
-        "notified": 0,
-        "best_margin_rub": null
+        "notified": 1,
+        "best_margin_rub": 18100
       },
       "last_source_error": null,
       "detail_probe": {
@@ -46,13 +46,22 @@
       },
       "detail_cooldown_until": "1793446898.7270823",
       "details_cached": 5,
-      "detail_requests": 213,
-      "seen_total": 1093,
+      "detail_requests": 214,
+      "seen_total": 1096,
       "pending_notifications": 0,
       "subscribers": 2
     }
   },
   "items": [
+    {
+      "item_id": "8370688098",
+      "notified_at": "2026-11-01T13:24:44.558414+00:00",
+      "title": "iPhone 17 Pro Max, 512 ГБ, SIM + eSIM",
+      "price_rub": 85000,
+      "market_price_rub": 105000,
+      "margin_rub": 18100,
+      "url": "https://www.avito.ru/moskva/telefony/iphone_17_pro_max_512_gb_sim_esim_8370688098"
+    },
     {
       "item_id": "8544324456",
       "notified_at": "2026-11-01T12:35:21.486929+00:00",
@@ -493,15 +502,6 @@
       "market_price_rub": 51198,
       "margin_rub": 698,
       "url": "https://www.avito.ru/vidnoe/telefony/iphone_15_pro_512_gb_sim_esim_8556841473"
-    },
-    {
-      "item_id": "8490171621",
-      "notified_at": "2026-11-01T09:09:38.446923+00:00",
-      "title": "iPhone 14, 256 ГБ, eSIM",
-      "price_rub": 15000,
-      "market_price_rub": 25000,
-      "margin_rub": 8100,
-      "url": "https://www.avito.ru/tuchkovo/telefony/iphone_14_256_gb_esim_8490171621"
     }
   ]
 }
