@@ -4,20 +4,20 @@
     "live": true,
     "monitoring_enabled": true,
     "source_failure_count": 0,
-    "heartbeat_at": 1793516077.2002156,
-    "heartbeat_iso": "2026-11-01T06:54:37.200216+00:00",
+    "heartbeat_at": 1793516928.9604554,
+    "heartbeat_iso": "2026-11-01T07:08:48.960455+00:00",
     "error": null,
-    "host": "run-pereekyp-97b6f669b-2wnn8",
+    "host": "run-pereekyp-665789969f-788nf",
     "diag": {
       "last_cycle": {
-        "at": "2026-11-01T06:54:35.808875+00:00",
-        "fetched": 37,
-        "new": 0,
+        "at": "2026-11-01T07:08:48.915069+00:00",
+        "fetched": 38,
+        "new": 1,
         "skipped_low_margin": 0,
         "skipped_after_detail": 0,
         "enriched": 0,
-        "notified": 0,
-        "best_margin_rub": null
+        "notified": 1,
+        "best_margin_rub": 5801
       },
       "last_source_error": null,
       "detail_probe": {
@@ -46,13 +46,22 @@
       },
       "detail_cooldown_until": "1793446898.7270823",
       "details_cached": 5,
-      "detail_requests": 131,
-      "seen_total": 882,
+      "detail_requests": 132,
+      "seen_total": 883,
       "pending_notifications": 0,
       "subscribers": 2
     }
   },
   "items": [
+    {
+      "item_id": "8514147277",
+      "notified_at": "2026-11-01T07:08:48.872787+00:00",
+      "title": "iPhone 17, 256 ГБ, SIM + eSIM",
+      "price_rub": 61299,
+      "market_price_rub": 69000,
+      "margin_rub": 5801,
+      "url": "https://www.avito.ru/lyubertsy/telefony/iphone_17_256_gb_sim_esim_8514147277"
+    },
     {
       "item_id": "8398714318",
       "notified_at": "2026-11-01T06:24:28.048841+00:00",
@@ -493,15 +502,6 @@
       "market_price_rub": 37000,
       "margin_rub": 1100,
       "url": "https://www.avito.ru/moskva/telefony/iphone_14_pro_256_gb_8370028026"
-    },
-    {
-      "item_id": "8398106617",
-      "notified_at": "2026-10-31T20:05:18.369047+00:00",
-      "title": "iPhone 16 Pro, 256 ГБ, 2 SIM",
-      "price_rub": 55400,
-      "market_price_rub": 60000,
-      "margin_rub": 2700,
-      "url": "https://www.avito.ru/moskva/telefony/iphone_16_pro_256_gb_2_sim_8398106617"
     }
   ]
 }
