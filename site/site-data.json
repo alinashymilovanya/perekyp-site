@@ -4,20 +4,20 @@
     "live": true,
     "monitoring_enabled": true,
     "source_failure_count": 0,
-    "heartbeat_at": 1793536521.621078,
-    "heartbeat_iso": "2026-11-01T12:35:21.621078+00:00",
+    "heartbeat_at": 1793538358.8169553,
+    "heartbeat_iso": "2026-11-01T13:05:58.816955+00:00",
     "error": null,
-    "host": "run-pereekyp-57d67bcdbd-qkcmd",
+    "host": "run-pereekyp-7c97b857c8-pt94x",
     "diag": {
       "last_cycle": {
-        "at": "2026-11-01T12:35:21.592735+00:00",
-        "fetched": 40,
-        "new": 40,
-        "skipped_low_margin": 20,
+        "at": "2026-11-01T13:05:56.934948+00:00",
+        "fetched": 39,
+        "new": 0,
+        "skipped_low_margin": 0,
         "skipped_after_detail": 0,
         "enriched": 0,
-        "notified": 18,
-        "best_margin_rub": 9100
+        "notified": 0,
+        "best_margin_rub": null
       },
       "last_source_error": null,
       "detail_probe": {
