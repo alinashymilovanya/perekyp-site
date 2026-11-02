@@ -3,23 +3,28 @@
     "healthy": true,
     "live": true,
     "monitoring_enabled": true,
-    "source_failure_count": 0,
-    "heartbeat_at": 1793638575.290569,
-    "heartbeat_iso": "2026-11-02T16:56:15.290569+00:00",
+    "source_failure_count": 2,
+    "heartbeat_at": 1793640380.4911125,
+    "heartbeat_iso": "2026-11-02T17:26:20.491112+00:00",
     "error": null,
-    "host": "run-pereekyp-7c6c7b5895-xfhth",
+    "host": "run-pereekyp-655594f655-shfk7",
     "diag": {
       "last_cycle": {
-        "at": "2026-11-02T16:56:14.986358+00:00",
+        "at": "2026-11-02T17:00:49.910917+00:00",
         "fetched": 53,
-        "new": 53,
-        "skipped_low_margin": 48,
+        "new": 0,
+        "skipped_low_margin": 0,
         "skipped_after_detail": 0,
         "enriched": 0,
-        "notified": 5,
-        "best_margin_rub": 20199
+        "notified": 0,
+        "best_margin_rub": null
       },
-      "last_source_error": null,
+      "last_source_error": {
+        "at": "2026-11-02T17:17:40.002158+00:00",
+        "error_type": "AvitoApiError",
+        "error": "Avito временно ограничил частоту запросов",
+        "rate_limited": true
+      },
       "detail_probe": {
         "item_id": "8489857845",
         "ok": null,
