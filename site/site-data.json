@@ -4,20 +4,20 @@
     "live": true,
     "monitoring_enabled": true,
     "source_failure_count": 0,
-    "heartbeat_at": 1793588707.5786555,
-    "heartbeat_iso": "2026-11-02T03:05:07.578655+00:00",
+    "heartbeat_at": 1793590508.7054548,
+    "heartbeat_iso": "2026-11-02T03:35:08.705455+00:00",
     "error": null,
-    "host": "run-pereekyp-bc84668f6-6qs2z",
+    "host": "run-pereekyp-5b65bfdd59-mf52n",
     "diag": {
       "last_cycle": {
-        "at": "2026-11-02T03:05:07.522171+00:00",
+        "at": "2026-11-02T03:34:30.710499+00:00",
         "fetched": 38,
-        "new": 2,
+        "new": 0,
         "skipped_low_margin": 0,
         "skipped_after_detail": 0,
         "enriched": 0,
-        "notified": 1,
-        "best_margin_rub": 38100
+        "notified": 0,
+        "best_margin_rub": null
       },
       "last_source_error": null,
       "detail_probe": {
@@ -46,8 +46,8 @@
       },
       "detail_cooldown_until": "1793446898.7270823",
       "details_cached": 8,
-      "detail_requests": 298,
-      "seen_total": 1413,
+      "detail_requests": 299,
+      "seen_total": 1414,
       "pending_notifications": 0,
       "subscribers": 2
     }
