@@ -3,28 +3,23 @@
     "healthy": true,
     "live": true,
     "monitoring_enabled": true,
-    "source_failure_count": 2,
-    "heartbeat_at": 1793749885.2221367,
-    "heartbeat_iso": "2026-11-03T23:51:25.222137+00:00",
+    "source_failure_count": 0,
+    "heartbeat_at": 1793750010.0022032,
+    "heartbeat_iso": "2026-11-03T23:53:30.002203+00:00",
     "error": null,
-    "host": "run-pereekyp-68cf6657c5-ghpn2",
+    "host": "run-pereekyp-849dcb8955-sdhzw",
     "diag": {
       "last_cycle": {
-        "at": "2026-11-03T21:51:14.318487+00:00",
-        "fetched": 40,
-        "new": 40,
-        "skipped_low_margin": 31,
+        "at": "2026-11-03T23:53:29.960695+00:00",
+        "fetched": 33,
+        "new": 33,
+        "skipped_low_margin": 24,
         "skipped_after_detail": 0,
         "enriched": 0,
-        "notified": 6,
-        "best_margin_rub": 21055
+        "notified": 5,
+        "best_margin_rub": 6540
       },
-      "last_source_error": {
-        "at": "2026-11-03T23:37:57.855345+00:00",
-        "error_type": "AvitoApiError",
-        "error": "Avito временно ограничил частоту запросов",
-        "rate_limited": true
-      },
+      "last_source_error": null,
       "detail_probe": {
         "item_id": "8489857845",
         "ok": null,
@@ -51,13 +46,58 @@
       },
       "detail_cooldown_until": "1793446898.7270823",
       "details_cached": 14,
-      "detail_requests": 562,
-      "seen_total": 2327,
+      "detail_requests": 571,
+      "seen_total": 2360,
       "pending_notifications": 0,
       "subscribers": 2
     }
   },
   "items": [
+    {
+      "item_id": "8442754635",
+      "notified_at": "2026-11-03T23:53:28.153867+00:00",
+      "title": "iPhone 14, 256 ГБ, SIM + eSIM",
+      "price_rub": 22490,
+      "market_price_rub": 25000,
+      "margin_rub": 610,
+      "url": "https://www.avito.ru/moskva/telefony/iphone_14_256_gb_sim_esim_8442754635"
+    },
+    {
+      "item_id": "8380068330",
+      "notified_at": "2026-11-03T23:53:21.490092+00:00",
+      "title": "iPhone 18 Pro Max, 256 ГБ, SIM + eSIM",
+      "price_rub": 115000,
+      "market_price_rub": 122500,
+      "margin_rub": 5600,
+      "url": "https://www.avito.ru/moskva/telefony/iphone_18_pro_max_256_gb_sim_esim_8380068330"
+    },
+    {
+      "item_id": "8400995459",
+      "notified_at": "2026-11-03T23:53:14.420933+00:00",
+      "title": "iPhone 17 Pro, 256 ГБ, eSIM",
+      "price_rub": 77000,
+      "market_price_rub": 82000,
+      "margin_rub": 3100,
+      "url": "https://www.avito.ru/moskva/telefony/iphone_17_pro_256_gb_esim_8400995459"
+    },
+    {
+      "item_id": "8439847935",
+      "notified_at": "2026-11-03T23:53:08.114773+00:00",
+      "title": "iPhone 15, 256 ГБ, 2 SIM",
+      "price_rub": 32990,
+      "market_price_rub": 37000,
+      "margin_rub": 2110,
+      "url": "https://www.avito.ru/moskva/telefony/iphone_15_256_gb_2_sim_8439847935"
+    },
+    {
+      "item_id": "8463106876",
+      "notified_at": "2026-11-03T23:53:05.373444+00:00",
+      "title": "iPhone 16 Plus, 512 ГБ, eSIM",
+      "price_rub": 69600,
+      "market_price_rub": 74600,
+      "margin_rub": 3100,
+      "url": "https://www.avito.ru/moskva/telefony/iphone_16_plus_512_gb_esim_8463106876"
+    },
     {
       "item_id": "8575556066",
       "notified_at": "2026-11-03T21:51:12.727418+00:00",
@@ -462,51 +502,6 @@
       "market_price_rub": 48000,
       "margin_rub": 6670,
       "url": "https://www.avito.ru/moskva/telefony/iphone_16_256_gb_sim_esim_8516944286"
-    },
-    {
-      "item_id": "8521421244",
-      "notified_at": "2026-11-03T14:57:17.920351+00:00",
-      "title": "iPhone 13 Pro, 128 ГБ, 1 SIM",
-      "price_rub": 24730,
-      "market_price_rub": 28990,
-      "margin_rub": 2360,
-      "url": "https://www.avito.ru/moskva/telefony/iphone_13_pro_128_gb_1_sim_8521421244"
-    },
-    {
-      "item_id": "8360655111",
-      "notified_at": "2026-11-03T14:57:15.203570+00:00",
-      "title": "iPhone 13, 512 ГБ, SIM + eSIM",
-      "price_rub": 21770,
-      "market_price_rub": 30990,
-      "margin_rub": 7320,
-      "url": "https://www.avito.ru/moskva/telefony/iphone_13_512_gb_sim_esim_8360655111"
-    },
-    {
-      "item_id": "8422885523",
-      "notified_at": "2026-11-03T14:57:12.423629+00:00",
-      "title": "iPhone 17, 512 ГБ, 2 SIM",
-      "price_rub": 71350,
-      "market_price_rub": 79200,
-      "margin_rub": 5950,
-      "url": "https://www.avito.ru/moskva/telefony/iphone_17_512_gb_2_sim_8422885523"
-    },
-    {
-      "item_id": "8517657851",
-      "notified_at": "2026-11-03T14:57:09.026393+00:00",
-      "title": "iPhone 16 Pro, 1 ТБ, SIM + eSIM",
-      "price_rub": 58270,
-      "market_price_rub": 98900,
-      "margin_rub": 38730,
-      "url": "https://www.avito.ru/moskva/telefony/iphone_16_pro_1_tb_sim_esim_8517657851"
-    },
-    {
-      "item_id": "8414699757",
-      "notified_at": "2026-11-03T14:57:05.886265+00:00",
-      "title": "iPhone 16 Pro, 256 ГБ, SIM + eSIM",
-      "price_rub": 50770,
-      "market_price_rub": 60000,
-      "margin_rub": 7330,
-      "url": "https://www.avito.ru/moskva/telefony/iphone_16_pro_256_gb_sim_esim_8414699757"
     }
   ]
 }
