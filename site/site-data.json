@@ -4,20 +4,20 @@
     "live": true,
     "monitoring_enabled": true,
     "source_failure_count": 0,
-    "heartbeat_at": 1793673642.3566165,
-    "heartbeat_iso": "2026-11-03T02:40:42.356616+00:00",
+    "heartbeat_at": 1793674850.2486875,
+    "heartbeat_iso": "2026-11-03T03:00:50.248688+00:00",
     "error": null,
-    "host": "run-pereekyp-6d8bdb5cfc-sx6tv",
+    "host": "run-pereekyp-b8d5db458-7sf2s",
     "diag": {
       "last_cycle": {
-        "at": "2026-11-03T02:40:40.803065+00:00",
-        "fetched": 18,
-        "new": 0,
-        "skipped_low_margin": 0,
+        "at": "2026-11-03T03:00:50.219807+00:00",
+        "fetched": 19,
+        "new": 2,
+        "skipped_low_margin": 1,
         "skipped_after_detail": 0,
         "enriched": 0,
-        "notified": 0,
-        "best_margin_rub": null
+        "notified": 1,
+        "best_margin_rub": 4850
       },
       "last_source_error": null,
       "detail_probe": {
@@ -46,13 +46,22 @@
       },
       "detail_cooldown_until": "1793446898.7270823",
       "details_cached": 10,
-      "detail_requests": 441,
-      "seen_total": 1894,
+      "detail_requests": 442,
+      "seen_total": 1896,
       "pending_notifications": 0,
       "subscribers": 2
     }
   },
   "items": [
+    {
+      "item_id": "8502977983",
+      "notified_at": "2026-11-03T03:00:50.156016+00:00",
+      "title": "iPhone 15 Pro Max, 256 ГБ, 2 SIM",
+      "price_rub": 44000,
+      "market_price_rub": 50750,
+      "margin_rub": 4850,
+      "url": "https://www.avito.ru/moskva/telefony/iphone_15_pro_max_256_gb_2_sim_8502977983"
+    },
     {
       "item_id": "8577680900",
       "notified_at": "2026-11-03T02:10:27.123787+00:00",
@@ -493,15 +502,6 @@
       "market_price_rub": 123000,
       "margin_rub": 1100,
       "url": "https://www.avito.ru/moskva/telefony/iphone_18_pro_max_256_gb_esim_8348461310"
-    },
-    {
-      "item_id": "8360156109",
-      "notified_at": "2026-11-02T16:55:53.015867+00:00",
-      "title": "iPhone 15 Pro Max, 256 ГБ, SIM + eSIM",
-      "price_rub": 29000,
-      "market_price_rub": 51099,
-      "margin_rub": 20199,
-      "url": "https://www.avito.ru/odintsovo/telefony/iphone_15_pro_max_256_gb_sim_esim_8360156109"
     }
   ]
 }
