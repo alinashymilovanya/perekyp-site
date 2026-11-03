@@ -4,20 +4,20 @@
     "live": true,
     "monitoring_enabled": true,
     "source_failure_count": 0,
-    "heartbeat_at": 1793694495.2861931,
-    "heartbeat_iso": "2026-11-03T08:28:15.286193+00:00",
+    "heartbeat_at": 1793694681.0377781,
+    "heartbeat_iso": "2026-11-03T08:31:21.037778+00:00",
     "error": null,
-    "host": "run-pereekyp-6b5f9548b6-99tlk",
+    "host": "run-pereekyp-5f654c5b59-xc4jj",
     "diag": {
       "last_cycle": {
-        "at": "2026-11-03T08:28:15.191450+00:00",
-        "fetched": 34,
-        "new": 34,
-        "skipped_low_margin": 23,
+        "at": "2026-11-03T08:31:21.022171+00:00",
+        "fetched": 32,
+        "new": 1,
+        "skipped_low_margin": 0,
         "skipped_after_detail": 0,
         "enriched": 0,
-        "notified": 10,
-        "best_margin_rub": 33500
+        "notified": 1,
+        "best_margin_rub": 14590
       },
       "last_source_error": null,
       "detail_probe": {
@@ -46,13 +46,22 @@
       },
       "detail_cooldown_until": "1793446898.7270823",
       "details_cached": 12,
-      "detail_requests": 475,
-      "seen_total": 2033,
+      "detail_requests": 476,
+      "seen_total": 2034,
       "pending_notifications": 0,
       "subscribers": 2
     }
   },
   "items": [
+    {
+      "item_id": "8440608426",
+      "notified_at": "2026-11-03T08:31:21.012500+00:00",
+      "title": "iPhone 17 Pro Max, 1 ТБ, SIM + eSIM",
+      "price_rub": 108000,
+      "market_price_rub": 124490,
+      "margin_rub": 14590,
+      "url": "https://www.avito.ru/moskva/telefony/iphone_17_pro_max_1_tb_sim_esim_8440608426"
+    },
     {
       "item_id": "8380383847",
       "notified_at": "2026-11-03T08:28:14.524684+00:00",
@@ -493,15 +502,6 @@
       "market_price_rub": 9000,
       "margin_rub": 1100,
       "url": "https://www.avito.ru/moskva/telefony/iphone_11_64_gb_1_sim_8452042316"
-    },
-    {
-      "item_id": "8422386905",
-      "notified_at": "2026-11-02T21:06:36.236024+00:00",
-      "title": "iPhone 17, 256 ГБ, 2 SIM",
-      "price_rub": 62308,
-      "market_price_rub": 68245,
-      "margin_rub": 4037,
-      "url": "https://www.avito.ru/moskovskaya_oblast_moskovskiy/telefony/iphone_17_256_gb_2_sim_8422386905"
     }
   ]
 }
