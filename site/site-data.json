@@ -3,11 +3,11 @@
     "healthy": true,
     "live": true,
     "monitoring_enabled": true,
-    "source_failure_count": 2,
-    "heartbeat_at": 1793738944.171,
-    "heartbeat_iso": "2026-11-03T20:49:04.171000+00:00",
+    "source_failure_count": 1,
+    "heartbeat_at": 1793740748.3465872,
+    "heartbeat_iso": "2026-11-03T21:19:08.346587+00:00",
     "error": null,
-    "host": "run-pereekyp-5f7d6dd54d-7p56v",
+    "host": "run-pereekyp-65b7c5dc75-p5frf",
     "diag": {
       "last_cycle": {
         "at": "2026-11-03T20:07:29.684079+00:00",
@@ -20,7 +20,7 @@
         "best_margin_rub": null
       },
       "last_source_error": {
-        "at": "2026-11-03T20:35:46.410650+00:00",
+        "at": "2026-11-03T21:13:17.539684+00:00",
         "error_type": "AvitoApiError",
         "error": "Avito временно ограничил частоту запросов",
         "rate_limited": true
@@ -50,14 +50,23 @@
         }
       },
       "detail_cooldown_until": "1793446898.7270823",
-      "details_cached": 12,
-      "detail_requests": 552,
-      "seen_total": 2269,
+      "details_cached": 14,
+      "detail_requests": 553,
+      "seen_total": 2287,
       "pending_notifications": 0,
       "subscribers": 2
     }
   },
   "items": [
+    {
+      "item_id": "8372526147",
+      "notified_at": "2026-11-03T21:11:29.738378+00:00",
+      "title": "iPhone 18 Pro Max, 256 ГБ, SIM + eSIM",
+      "price_rub": 114500,
+      "market_price_rub": 122500,
+      "margin_rub": 6100,
+      "url": "https://www.avito.ru/moskva/telefony/iphone_18_pro_max_256_gb_sim_esim_8372526147"
+    },
     {
       "item_id": "8451968030",
       "notified_at": "2026-11-03T19:18:55.241552+00:00",
@@ -498,15 +507,6 @@
       "market_price_rub": 23700,
       "margin_rub": 1810,
       "url": "https://www.avito.ru/moskva/telefony/iphone_14_128_gb_sim_esim_8544783903"
-    },
-    {
-      "item_id": "8531179372",
-      "notified_at": "2026-11-03T13:54:43.729795+00:00",
-      "title": "iPhone 15 Pro, 512 ГБ",
-      "price_rub": 47500,
-      "market_price_rub": 53500,
-      "margin_rub": 4100,
-      "url": "https://www.avito.ru/moskva/telefony/iphone_15_pro_512_gb_8531179372"
     }
   ]
 }
