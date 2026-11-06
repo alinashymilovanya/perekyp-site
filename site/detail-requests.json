@@ -1,6 +1,11 @@
 {
-  "generated_at": 1793953627.6803901,
+  "generated_at": 1793961958.031382,
   "items": [
+    {
+      "item_id": "8414530698",
+      "title": "iPhone, 16 ГБ",
+      "url": "https://www.avito.ru/lobnya/telefony/iphone_16_gb_8414530698"
+    },
     {
       "item_id": "8432631636",
       "title": "iPhone 17 Pro, 512 ГБ, eSIM",
@@ -245,11 +250,6 @@
       "item_id": "8403957898",
       "title": "iPhone 16 Pro Max, 256 ГБ, SIM + eSIM",
       "url": "https://www.avito.ru/moskva/telefony/iphone_16_pro_max_256_gb_sim_esim_8403957898"
-    },
-    {
-      "item_id": "8513866754",
-      "title": "iPhone Duo, 256 ГБ, eSIM",
-      "url": "https://www.avito.ru/moskva/telefony/iphone_duo_256_gb_esim_8513866754"
     }
   ]
 }
