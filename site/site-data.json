@@ -3,28 +3,23 @@
     "healthy": true,
     "live": true,
     "monitoring_enabled": true,
-    "source_failure_count": 7,
-    "heartbeat_at": 1793939844.819459,
-    "heartbeat_iso": "2026-11-06T04:37:24.819459+00:00",
+    "source_failure_count": 0,
+    "heartbeat_at": 1793939859.948286,
+    "heartbeat_iso": "2026-11-06T04:37:39.948286+00:00",
     "error": null,
     "host": "run-pereekyp-6768cfd699-cf6bt",
     "diag": {
       "last_cycle": {
-        "at": "2026-11-06T02:37:16.356540+00:00",
-        "fetched": 15,
-        "new": 4,
-        "skipped_low_margin": 2,
+        "at": "2026-11-06T04:37:39.856617+00:00",
+        "fetched": 21,
+        "new": 11,
+        "skipped_low_margin": 10,
         "skipped_after_detail": 0,
         "enriched": 0,
-        "notified": 2,
-        "best_margin_rub": 5110
+        "notified": 1,
+        "best_margin_rub": 7100
       },
-      "last_source_error": {
-        "at": "2026-11-06T04:22:30.228257+00:00",
-        "error_type": "AvitoApiError",
-        "error": "Avito временно ограничил частоту запросов",
-        "rate_limited": true
-      },
+      "last_source_error": null,
       "detail_probe": {
         "item_id": "8489857845",
         "ok": null,
@@ -51,13 +46,22 @@
       },
       "detail_cooldown_until": "1793446898.7270823",
       "details_cached": 20,
-      "detail_requests": 834,
-      "seen_total": 3222,
+      "detail_requests": 835,
+      "seen_total": 3233,
       "pending_notifications": 0,
       "subscribers": 2
     }
   },
   "items": [
+    {
+      "item_id": "8402098033",
+      "notified_at": "2026-11-06T04:37:39.613019+00:00",
+      "title": "iPhone 15, 128 ГБ, 2 SIM",
+      "price_rub": 25000,
+      "market_price_rub": 34000,
+      "margin_rub": 7100,
+      "url": "https://www.avito.ru/klin/telefony/iphone_15_128_gb_2_sim_8402098033"
+    },
     {
       "item_id": "8401634125",
       "notified_at": "2026-11-06T02:37:16.294848+00:00",
@@ -498,15 +502,6 @@
       "market_price_rub": 53999,
       "margin_rub": 17799,
       "url": "https://www.avito.ru/moskva/telefony/iphone_15_pro_512_gb_sim_esim_8364472027"
-    },
-    {
-      "item_id": "8437694752",
-      "notified_at": "2026-11-05T09:53:52.658216+00:00",
-      "title": "iPhone 15, 256 ГБ, SIM + eSIM",
-      "price_rub": 32000,
-      "market_price_rub": 36999,
-      "margin_rub": 3099,
-      "url": "https://www.avito.ru/moskva/telefony/iphone_15_256_gb_sim_esim_8437694752"
     }
   ]
 }
