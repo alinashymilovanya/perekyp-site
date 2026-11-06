@@ -3,11 +3,11 @@
     "healthy": true,
     "live": true,
     "monitoring_enabled": true,
-    "source_failure_count": 4,
-    "heartbeat_at": 1793957237.0931804,
-    "heartbeat_iso": "2026-11-06T09:27:17.093180+00:00",
+    "source_failure_count": 2,
+    "heartbeat_at": 1793959038.0134318,
+    "heartbeat_iso": "2026-11-06T09:57:18.013432+00:00",
     "error": null,
-    "host": "run-pereekyp-7f6974bb77-cvbsq",
+    "host": "run-pereekyp-584fffdcf6-2ldm6",
     "diag": {
       "last_cycle": {
         "at": "2026-11-06T08:27:10.362955+00:00",
@@ -20,7 +20,7 @@
         "best_margin_rub": 21100
       },
       "last_source_error": {
-        "at": "2026-11-06T09:25:53.297110+00:00",
+        "at": "2026-11-06T09:45:48.450977+00:00",
         "error_type": "AvitoApiError",
         "error": "Avito временно ограничил частоту запросов",
         "rate_limited": true
