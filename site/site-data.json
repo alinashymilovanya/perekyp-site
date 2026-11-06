@@ -3,9 +3,9 @@
     "healthy": true,
     "live": true,
     "monitoring_enabled": true,
-    "source_failure_count": 0,
-    "heartbeat_at": 1793951652.3096156,
-    "heartbeat_iso": "2026-11-06T07:54:12.309616+00:00",
+    "source_failure_count": 2,
+    "heartbeat_at": 1793953452.4039688,
+    "heartbeat_iso": "2026-11-06T08:24:12.403969+00:00",
     "error": null,
     "host": "run-pereekyp-6768cfd699-cf6bt",
     "diag": {
@@ -19,7 +19,12 @@
         "notified": 0,
         "best_margin_rub": null
       },
-      "last_source_error": null,
+      "last_source_error": {
+        "at": "2026-11-06T08:23:08.685819+00:00",
+        "error_type": "AvitoApiError",
+        "error": "Avito временно ограничил частоту запросов",
+        "rate_limited": true
+      },
       "detail_probe": {
         "item_id": "8489857845",
         "ok": null,
