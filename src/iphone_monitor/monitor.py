@@ -9,6 +9,7 @@ from typing import Sequence
 from . import plans
 from .analysis import analyze_listing
 from .avito_parser import ParsedListing
+from dataclasses import replace as dataclasses_replace
 from .formatter import ListingView, format_detail_addendum, format_listing_message
 from .item_detail import looks_like_block_page
 from .telegram_api import TelegramApiError
@@ -48,6 +49,7 @@ class Monitor:
         repair_reserve_broken_rub: int = 10_000,
         duplicate_window_hours: int = 24,
         weak_deal_margin_rub: int = 1_500,
+        park_wait_minutes: int = 0,
         trade_discount_pct: float = 10.0,
         seller_commission_pct: float = 5.0,
         sales_tax_pct: float = 4.0,
@@ -68,6 +70,7 @@ class Monitor:
         self.repair_reserve_broken_rub = repair_reserve_broken_rub
         self.duplicate_window_hours = duplicate_window_hours
         self.weak_deal_margin_rub = weak_deal_margin_rub
+        self.park_wait_seconds = int(park_wait_minutes) * 60
         self.trade_discount_pct = trade_discount_pct
         self.seller_commission_pct = seller_commission_pct
         self.sales_tax_pct = sales_tax_pct
@@ -240,6 +243,45 @@ class Monitor:
             "limit": plan_limit,
             "used": plan_used,
         }
+
+    def _resume_deliver(self, item_id: str, message: str, want_photo: bool) -> dict[str, int]:
+        """Отправка «проснувшегося» паркованного объявления — как _send, но
+        источник картинки кэш карточки, а не лента."""
+        detail = self.store.load_item_detail(item_id)
+        images = tuple(getattr(detail, "images", ()) or ()) if detail is not None else ()
+        photo = images[0] if (want_photo and images and len(message) <= 1_024) else None
+        sent = 0
+        queued = 0
+        delayed = 0
+        for chat_id in self.chat_ids:
+            account = self.store.ensure_account(chat_id, self.default_plan)
+            current = plans.effective_plan(account.plan, account.plan_until)
+            used = self.store.signals_used(chat_id, plans.day_key())
+            room = plans.quota(current.code, used)
+            if room.exhausted:
+                continue
+            self.store.consume_signal(chat_id, plans.day_key())
+            if current.queue_seconds > 0:
+                self.store.enqueue_notification(
+                    chat_id,
+                    "photo" if photo else "message",
+                    message,
+                    photo,
+                    deliver_at=plans.iso_in(plans.now_utc(), current.queue_seconds),
+                )
+                delayed += 1
+                continue
+            if photo and _send_photo(self.telegram, chat_id, photo, message):
+                sent += 1
+                continue
+            if _send_text(self.telegram, chat_id, message):
+                sent += 1
+                continue
+            self.store.enqueue_notification(
+                chat_id, "photo" if photo else "message", message, photo
+            )
+            queued += 1
+        return {"sent": sent, "queued": queued, "delayed": delayed}
 
     def _log_listing(self, event: str, listing: ParsedListing, status: str, **details) -> None:
         log_event(
@@ -459,6 +501,28 @@ class Monitor:
                 published_at=detail.published_at if detail is not None else "",
                 extras=tuple(extras),
             )
+            if detail is None and self.park_wait_seconds > 0:
+                # Карточку домашний агент ещё не дочитал: пустышку в чат не
+                # шлём. Объявление паркуется и уйдёт одним цельным сообщением,
+                # когда описание придёт (следующие циклы) либо по сроку.
+                self.store.mark_seen(listing.item_id)
+                self.store.park_listing(
+                    listing.item_id,
+                    {
+                        "view": view.__dict__,
+                        "has_photo": bool(listing.images),
+                        "parked_at": datetime.now(timezone.utc).isoformat(),
+                    },
+                )
+                self._log_listing(
+                    "listing_parked",
+                    listing,
+                    "deferred",
+                    reason="awaiting_detail",
+                    price_rub=listing.price_rub,
+                    margin_rub=analysis.margin_rub,
+                )
+                continue
             delivery = self._send(listing, format_listing_message(view))
             if not delivery["sent"] and not delivery["delayed"] and not delivery["queued"]:
                 # The daily limit of the tariff is used up: the signal is not
@@ -561,5 +625,68 @@ class Monitor:
                 ensure_ascii=False,
             ),
         )
-        return sent
+        # Отправляем отлежавшихся: с карточкой сразу, без неё — по сроку.
+        cutoff = datetime.now(timezone.utc)
+        for item_id, payload in self.store.take_parked(limit=50):
+            arrived = self.store.parked_arrived(item_id)
+            expired = False
+            if not arrived:
+                try:
+                    parked_at = datetime.fromisoformat(str(payload.get("parked_at")))
+                    if parked_at.tzinfo is None:
+                        parked_at = parked_at.replace(tzinfo=timezone.utc)
+                    expired = (cutoff - parked_at).total_seconds() >= self.park_wait_seconds
+                except ValueError:
+                    expired = True
+            if not arrived and not expired:
+                continue
+            view = ListingView(**payload["view"])
+            if arrived:
+                d = self.store.load_item_detail(item_id)
+                if d is not None:
+                    extras = list(view.extras)
+                    if d.color and not any(str(e).startswith("Цвет:") for e in extras):
+                        extras.append(f"Цвет: {d.color}")
+                    if d.sim and not any(str(e).startswith("SIM:") for e in extras):
+                        extras.append(f"SIM: {d.sim}")
+                    view = dataclasses_replace(
+                        view,
+                        condition=d.condition or view.condition,
+                        battery=(
+                            f"{d.battery_percent}%"
+                            if d.battery_percent is not None
+                            else view.battery
+                        ),
+                        description=d.description or view.description,
+                        seller=d.seller_name or view.seller,
+                        location=d.address or view.location,
+                        published_at=d.published_at or view.published_at,
+                        extras=tuple(extras),
+                    )
+            message = format_listing_message(view)
+            result = self._resume_deliver(item_id, message, bool(payload.get("has_photo")))
+            if result["sent"] or result["queued"] or result["delayed"]:
+                try:
+                    self.store.record_notified(
+                        item_id=item_id,
+                        title=view.title,
+                        price_rub=view.price_rub,
+                        market_price_rub=view.market_price_rub,
+                        margin_rub=view.margin_rub,
+                        url=view.url,
+                        notified_at=cutoff.isoformat(),
+                    )
+                except sqlite3.Error:
+                    pass
+                self.store.unpark(item_id)
+                sent += 1
+                log_event(
+                    "park_resumed",
+                    status="success",
+                    component="telegram",
+                    cycle_id=self.cycle_id,
+                    listing_id=item_id,
+                    reason=("arrived" if arrived else "expired"),
+                )
 
+        return sent

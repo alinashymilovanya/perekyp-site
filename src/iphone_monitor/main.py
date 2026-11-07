@@ -673,6 +673,7 @@ def run() -> None:
                         repair_reserve_used_rub=settings.repair_reserve_used_rub,
                         repair_reserve_broken_rub=settings.repair_reserve_broken_rub,
                         weak_deal_margin_rub=settings.weak_deal_margin_rub,
+                        park_wait_minutes=settings.park_wait_minutes,
                         trade_discount_pct=settings.trade_discount_pct,
                         seller_commission_pct=settings.seller_commission_pct,
                         sales_tax_pct=settings.sales_tax_pct,
