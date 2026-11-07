@@ -118,6 +118,21 @@ def _robust_market(prices: list[int]) -> int | None:
     return int(center)
 
 
+def _norm_place(text: str) -> str:
+    """Compare city names forgivingly: ё→е, регистр и знаки не важны."""
+    folded = str(text).strip().lower().replace("ё", "е")
+    return "".join(char for char in folded if char.isalnum())
+
+
+def _far_city_note(location: str | None, buyer_city: str) -> str | None:
+    """Warn when the lot is far away: delivery beyond the flat 400 ₽."""
+    if not buyer_city or not location:
+        return None
+    if _norm_place(buyer_city) == _norm_place(location):
+        return None
+    return f"Лот в другом городе ({location}) — дорога и доставка могут выйти дороже"
+
+
 def analyze_listing(
     listing: ParsedListing,
     comparable_prices: list[int],
@@ -127,6 +142,10 @@ def analyze_listing(
     minimum_margin_rub: int = 500,
     repair_reserve_used_rub: int = 1_500,
     repair_reserve_broken_rub: int = 10_000,
+    trade_discount_pct: float = 10.0,
+    seller_commission_pct: float = 5.0,
+    tax_pct: float = 4.0,
+    buyer_city: str = "",
 ) -> ListingAnalysis:
     market_price = _robust_market(list(comparable_prices))
     reserve = _repair_reserve(
@@ -136,6 +155,9 @@ def analyze_listing(
         description=listing.description,
     )
     positives, negatives = _description_notes(listing)
+    far_city_note = _far_city_note(listing.location, buyer_city)
+    if far_city_note:
+        negatives.append(far_city_note)
     margin = None
     if market_price is not None:
         margin = calculate_margin(
@@ -147,6 +169,9 @@ def analyze_listing(
                 repair_reserve_rub=reserve,
             ),
             minimum_margin_rub=minimum_margin_rub,
+            trade_discount_pct=trade_discount_pct,
+            seller_commission_pct=seller_commission_pct,
+            tax_pct=tax_pct,
         ).margin_rub
     return ListingAnalysis(
         market_price_rub=market_price,

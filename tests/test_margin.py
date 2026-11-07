@@ -15,7 +15,7 @@ class MarginTests(unittest.TestCase):
 
         result = calculate_margin(listing)
 
-        self.assertEqual(result.margin_rub, 10_100)
+        self.assertEqual(result.margin_rub, 688)
         self.assertTrue(result.is_promising)
 
     def test_margin_is_not_promising_below_threshold(self):
@@ -29,5 +29,5 @@ class MarginTests(unittest.TestCase):
 
         result = calculate_margin(listing, minimum_margin_rub=500)
 
-        self.assertEqual(result.margin_rub, 400)
+        self.assertEqual(result.margin_rub, -8_794)
         self.assertFalse(result.is_promising)

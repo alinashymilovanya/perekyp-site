@@ -19,7 +19,7 @@ class AnalysisTests(unittest.TestCase):
         result = analyze_listing(listing, [30_000, 32_000, 31_000])
 
         self.assertEqual(result.market_price_rub, 31_000)
-        self.assertEqual(result.margin_rub, 9_100)
+        self.assertEqual(result.margin_rub, 3_489)
         self.assertIn("Аккумулятор 84%", result.negatives)
 
     def test_missing_market_data_does_not_invent_margin(self):

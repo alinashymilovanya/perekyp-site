@@ -59,9 +59,9 @@ class MonitorTests(unittest.TestCase):
                 monitor = Monitor(
                     FakeSource(
                         [
-                            listing("1", "25 000"),
-                            listing("3", "24 000"),
-                            listing("4", "26 000"),
+                            listing("1", "29 000"),
+                            listing("3", "30 000"),
+                            listing("4", "31 000"),
                             listing("2", "20 000"),
                         ]
                     ),
@@ -79,7 +79,7 @@ class MonitorTests(unittest.TestCase):
                 notified = store.top_notified_since("2000-01-01T00:00:00+00:00")
                 self.assertEqual(notified[0].item_id, "2")
                 self.assertEqual(notified[0].price_rub, 20_000)
-                self.assertEqual(notified[0].margin_rub, 3_100)
+                self.assertEqual(notified[0].margin_rub, 2_670)
 
     def test_new_listing_without_an_image_sends_one_text_message(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -144,9 +144,9 @@ class MonitorTests(unittest.TestCase):
                 sent = Monitor(
                     FakeSource(
                         [
-                            listing("1", "25 000"),
-                            listing("3", "24 000"),
-                            listing("4", "26 000"),
+                            listing("1", "29 000"),
+                            listing("3", "30 000"),
+                            listing("4", "31 000"),
                             listing("2", "20 000"),
                         ]
                     ),
@@ -166,9 +166,9 @@ class MonitorTests(unittest.TestCase):
                 sent = Monitor(
                     FakeSource(
                         [
-                            listing("1", "25 000"),
-                            listing("3", "24 000"),
-                            listing("4", "26 000"),
+                            listing("1", "29 000"),
+                            listing("3", "30 000"),
+                            listing("4", "31 000"),
                             listing("2", "20 000"),
                         ]
                     ),

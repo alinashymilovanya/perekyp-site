@@ -5,6 +5,7 @@ runs on the user's PC (residential address), reads every requested page with
 the same parser the bot uses, and publishes site/detail-results.json back.
 """
 
+import random
 import sys
 import time
 from pathlib import Path
@@ -33,12 +34,13 @@ from iphone_monitor.item_detail import (  # noqa: E402
 from iphone_monitor.telemetry import configure_logging, log_event  # noqa: E402
 
 POLL_SECONDS = 20.0
-PAGE_PAUSE_SECONDS = 12.0
+PAGE_PAUSE_SECONDS = 25.0
 HEARTBEAT_SECONDS = 300.0
-BLOCK_SLEEP_SECONDS = 600.0
-BLOCK_SLEEP_MAX_SECONDS = 10_800.0
-MAX_PAGES_PER_ROUND = 8
+BLOCK_SLEEP_SECONDS = 900.0
+BLOCK_SLEEP_MAX_SECONDS = 3_600.0
+MAX_PAGES_PER_ROUND = 5
 MAX_STORED_DETAILS = 400
+PAUSE_JITTER_BOUNDS = (0.8, 1.4)
 
 
 def _stub(item_id: str, url: str, title: str) -> ParsedListing:
@@ -192,7 +194,7 @@ def run_round(state, settings, fetch, *, sleep=time.sleep, reader=None) -> int:
             condition=detail.condition,
             battery=detail.battery_percent,
         )
-        sleep(PAGE_PAUSE_SECONDS)
+        sleep(PAGE_PAUSE_SECONDS * random.uniform(*PAUSE_JITTER_BOUNDS))
     return fetched
 
 

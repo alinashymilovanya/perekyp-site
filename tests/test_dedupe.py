@@ -90,7 +90,7 @@ class DedupeTest(unittest.TestCase):
     def test_other_price_is_announced(self):
         telegram = FakeTelegram()
         monitor = Monitor(
-            FakeSource([_listing("b2", 115_000)]),
+            FakeSource([_listing("b2", 100_000)]),
             self.store,
             telegram,
             "42",
@@ -114,7 +114,7 @@ class DedupeTest(unittest.TestCase):
         )
         telegram = FakeTelegram()
         monitor = Monitor(
-            FakeSource([_listing("b3", 110_000)]),
+            FakeSource([_listing("b3", 100_000)]),
             self.store,
             telegram,
             "42",

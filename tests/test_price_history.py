@@ -98,7 +98,7 @@ class MonitorHistoryTests(unittest.TestCase):
 
                 self.assertEqual(sent, 1)
                 self.assertIn("30 000", telegram.messages[0][1])
-                self.assertIn("8 100", telegram.messages[0][1])
+                self.assertIn("2 670", telegram.messages[0][1])
 
     def test_single_listing_page_does_not_invent_a_market_price(self):
         with tempfile.TemporaryDirectory() as directory:

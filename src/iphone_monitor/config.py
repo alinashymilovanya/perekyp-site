@@ -22,6 +22,10 @@ class Settings:
     repair_reserve_used_rub: int = 1_500
     repair_reserve_broken_rub: int = 10_000
     weak_deal_margin_rub: int = 1_500
+    trade_discount_pct: float = 10.0
+    seller_commission_pct: float = 5.0
+    sales_tax_pct: float = 4.0
+    buyer_city: str = ""
     browser_act_path: str = "browser-act"
     avito_browser_id: str = ""
     avito_session_name: str = "avito-check"
@@ -50,6 +54,10 @@ class Settings:
     vision_playwright_path: str = "playwright"
     status_path: str = "data/runtime-status.json"
     log_path: str = "data/bot.log"
+    # Тариф для чата, у которого ещё нет аккаунта. "pro" сохраняет прежнее
+    # поведение для действующих подписчиков; новый человек получает Free
+    # через /start, где тариф задаётся явно.
+    default_plan: str = "pro"
     source_retry_base_seconds: int = 60
     source_retry_max_seconds: int = 1_800
     source_alert_after_seconds: int = 900
@@ -83,16 +91,23 @@ def _validate_daily_summary_schedule(summary_time: str, timezone_name: str) -> N
         raise ValueError("SUMMARY_TIMEZONE must be a valid IANA timezone") from exc
 
 
-def load_settings(path: str | Path = ".env") -> Settings:
+def read_env_file(path: str | Path = ".env") -> dict[str, str]:
+    """Parse ``KEY=VALUE`` lines from a .env file; comments and blanks are skipped."""
     values: dict[str, str] = {}
     env_path = Path(path)
-    if env_path.is_file():
-        for raw_line in env_path.read_text(encoding="utf-8").splitlines():
-            line = raw_line.strip()
-            if not line or line.startswith("#") or "=" not in line:
-                continue
-            key, value = line.split("=", 1)
-            values[key.strip()] = value.strip()
+    if not env_path.is_file():
+        return values
+    for raw_line in env_path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        values[key.strip()] = value.strip()
+    return values
+
+
+def load_settings(path: str | Path = ".env") -> Settings:
+    values = read_env_file(path)
     values.update(os.environ)
 
     token = values.get("TELEGRAM_BOT_TOKEN", "")
@@ -119,6 +134,10 @@ def load_settings(path: str | Path = ".env") -> Settings:
         repair_reserve_used_rub=int(values.get("REPAIR_RESERVE_USED_RUB", "1500")),
         repair_reserve_broken_rub=int(values.get("REPAIR_RESERVE_BROKEN_RUB", "10000")),
         weak_deal_margin_rub=int(values.get("WEAK_DEAL_MARGIN_RUB", "1500")),
+        trade_discount_pct=float(values.get("TRADE_DISCOUNT_PCT", "10")),
+        seller_commission_pct=float(values.get("SELLER_COMMISSION_PCT", "5")),
+        sales_tax_pct=float(values.get("TAX_PCT", "4")),
+        buyer_city=values.get("BUYER_CITY", ""),
         browser_act_path=values.get("BROWSER_ACT_PATH", "browser-act"),
         avito_browser_id=values.get("AVITO_BROWSER_ID", ""),
         avito_session_name=values.get("AVITO_SESSION_NAME", "avito-check"),
@@ -149,6 +168,7 @@ def load_settings(path: str | Path = ".env") -> Settings:
         vision_playwright_path=values.get("VISION_PLAYWRIGHT_PATH", "playwright"),
         status_path=values.get("STATUS_PATH", "data/runtime-status.json"),
         log_path=values.get("LOG_PATH", "data/bot.log"),
+        default_plan=(values.get("DEFAULT_PLAN", "pro").strip().lower() or "pro"),
         source_retry_base_seconds=int(values.get("SOURCE_RETRY_BASE_SECONDS", "60")),
         source_retry_max_seconds=int(values.get("SOURCE_RETRY_MAX_SECONDS", "1800")),
         source_alert_after_seconds=int(values.get("SOURCE_ALERT_AFTER_SECONDS", "900")),
