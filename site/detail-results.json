@@ -522,6 +522,22 @@
       "storage_gb": 256,
       "title": "iPhone 15 Plus, 256 ГБ, SIM + eSIM"
     },
+    "8422102335": {
+      "address": "",
+      "battery_percent": null,
+      "color": "",
+      "condition": null,
+      "description": "",
+      "images": [],
+      "item_id": "8422102335",
+      "params": [],
+      "price_rub": 71000,
+      "published_at": "",
+      "seller_name": "Timofey",
+      "sim": "",
+      "storage_gb": null,
+      "title": "iPhone 16 Pro Max, 512 ГБ, SIM + eSIM"
+    },
     "8422553636": {
       "address": "",
       "battery_percent": null,
@@ -1616,5 +1632,5 @@
       "title": "iPhone 16 Pro Max, 1 ТБ, SIM + eSIM"
     }
   },
-  "generated_at": 1794237710.4943616
+  "generated_at": 1794244097.3397343
 }
