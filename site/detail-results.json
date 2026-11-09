@@ -522,6 +522,22 @@
       "storage_gb": 256,
       "title": "iPhone 15 Plus, 256 ГБ, SIM + eSIM"
     },
+    "8422553636": {
+      "address": "",
+      "battery_percent": null,
+      "color": "",
+      "condition": null,
+      "description": "",
+      "images": [],
+      "item_id": "8422553636",
+      "params": [],
+      "price_rub": 38000,
+      "published_at": "",
+      "seller_name": "Пользователь",
+      "sim": "",
+      "storage_gb": null,
+      "title": "iPhone 15 Pro, 128 ГБ, SIM + eSIM"
+    },
     "8431942968": {
       "address": "",
       "battery_percent": 100,
@@ -797,6 +813,67 @@
       "sim": "SIM + eSIM",
       "storage_gb": 256,
       "title": "iPhone 16e, 256 ГБ, SIM + eSIM"
+    },
+    "8452543340": {
+      "address": "",
+      "battery_percent": 80,
+      "color": "Серый",
+      "condition": "Удовлетворительное",
+      "description": "Телефон 15 про Макс все работает кроме дисплея . Телефон на Android.\nВ комплекте телефон и зарядка",
+      "images": [],
+      "item_id": "8452543340",
+      "params": [
+        [
+          "Состояние",
+          "Удовлетворительное"
+        ],
+        [
+          "Экран",
+          "Был заменен"
+        ],
+        [
+          "Корпус",
+          "Без дефектов"
+        ],
+        [
+          "Состояние аккумулятора",
+          "80 %"
+        ],
+        [
+          "Работа устройства",
+          "Включается"
+        ],
+        [
+          "Производитель",
+          "Apple"
+        ],
+        [
+          "Модель",
+          "iPhone 15 Pro Max"
+        ],
+        [
+          "Встроенная память",
+          "512 ГБ"
+        ],
+        [
+          "SIM-карты",
+          "1 SIM"
+        ],
+        [
+          "Цвет",
+          "Серый"
+        ],
+        [
+          "Страна происхождения товара",
+          "Россия"
+        ]
+      ],
+      "price_rub": 4500,
+      "published_at": "2026-11-07T16:49:00",
+      "seller_name": "Пользователь",
+      "sim": "1 SIM",
+      "storage_gb": 512,
+      "title": "iPhone 15 Pro Max, 512 ГБ, 1 SIM"
     },
     "8452772830": {
       "address": "",
@@ -1151,6 +1228,22 @@
       "sim": "Только eSIM",
       "storage_gb": 256,
       "title": "iPhone 17 Pro Max, 256 ГБ, eSIM"
+    },
+    "8514668164": {
+      "address": "",
+      "battery_percent": null,
+      "color": "",
+      "condition": null,
+      "description": "",
+      "images": [],
+      "item_id": "8514668164",
+      "params": [],
+      "price_rub": 40000,
+      "published_at": "",
+      "seller_name": "Пользователь",
+      "sim": "",
+      "storage_gb": null,
+      "title": "iPhone 15 Pro, 128 ГБ, 1 SIM"
     },
     "8521262044": {
       "address": "",
@@ -1523,5 +1616,5 @@
       "title": "iPhone 16 Pro Max, 1 ТБ, SIM + eSIM"
     }
   },
-  "generated_at": 1794130771.7269394
+  "generated_at": 1794237710.4943616
 }
