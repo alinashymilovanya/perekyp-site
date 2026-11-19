@@ -1,6 +1,22 @@
 {
   "agent": "home-pc",
   "details": {
+    "8455507278": {
+      "address": "",
+      "battery_percent": null,
+      "color": "",
+      "condition": null,
+      "description": "",
+      "images": [],
+      "item_id": "8455507278",
+      "params": [],
+      "price_rub": null,
+      "published_at": "",
+      "seller_name": "",
+      "sim": "",
+      "storage_gb": null,
+      "title": "Товар снят с продажи, но мы подобрали похожие"
+    },
     "8531090015": {
       "address": "",
       "battery_percent": null,
@@ -18,5 +34,5 @@
       "title": "iPhone 11, 128 ГБ, 1 SIM"
     }
   },
-  "generated_at": 1795111551.8704147
+  "generated_at": 1795111646.367854
 }
